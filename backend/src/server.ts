@@ -2,14 +2,31 @@ import express from 'express';
 import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
+import session from 'express-session';
+import rootRoute from './routes/routes';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+
+app.use(
+  session({
+    name: 'sid',
+    secret: process.env.SESSION_SECRET!,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 2, // 2 jam
+      httpOnly: true,
+      secure: false, // true jika pakai HTTPS
+      sameSite: 'lax',
+    },
+  }),
+);
 
 app.use(
   morgan(':date[iso] :remote-addr :method :url :status :res[content-length] - :response-time ms', {
@@ -21,6 +38,8 @@ app.use(
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
+
+app.use('/api', rootRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
