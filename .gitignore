@@ -11,3 +11,6 @@ build/
 # VSCode settings
 .vscode/*
 !.vscode/settings.json
+
+# prisma
+backend/src/generated/prisma
