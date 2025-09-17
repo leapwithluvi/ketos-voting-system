@@ -13,7 +13,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FE_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
