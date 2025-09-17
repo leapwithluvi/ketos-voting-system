@@ -8,10 +8,12 @@ declare module 'express-session' {
     user?: {
       id: string;
       nisn: string;
+      role: string;
     };
     admin?: {
       id: string;
       username: string;
+      role: string;
     };
   }
 }
@@ -21,45 +23,25 @@ export const login = async (req: Request, res: Response) => {
   const { nisn, password } = req.body;
   try {
     const user = await loginServices.login(nisn, password);
-
-    // simpan session
     req.session.user = {
       id: user.id,
       nisn: user.nisn,
+      role: user.role,
+    };
+
+    req.user = {
+      id: user.id,
+      nisn: user.nisn,
+      role: user.role,
     };
 
     return responseSuccess(res, 'Login berhasil.', httpStatus.OK, {
       id: user.id,
       nisn: user.nisn,
+      role: user.role,
     });
   } catch (err: any) {
     return responseError(res, err.message || 'Login gagal.', httpStatus.BAD_REQUEST, err);
-  }
-};
-
-// ADMIN LOGIN
-export const adminLogin = async (req: Request, res: Response) => {
-  try {
-    const { username, password } = req.body;
-    const admin = await loginServices.loginAdmin(username, password);
-
-    // simpan session admin
-    req.session.admin = {
-      id: admin.id,
-      username: admin.username,
-    };
-
-    return responseSuccess(res, 'Login berhasil', httpStatus.OK, {
-      id: admin.id,
-      username: admin.username,
-    });
-  } catch (err: any) {
-    return responseError(
-      res,
-      err.message || 'Login gagal admin',
-      httpStatus.UNAUTHORIZED,
-      undefined,
-    );
   }
 };
 

@@ -15,12 +15,6 @@ model User {
   votes    Vote[]
 }
 
-model Admin {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  username String @unique
-  password String
-}
-
 model Candidate {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   nama      String
