@@ -7,3 +7,10 @@ node_modules/
 # Build / Dist folder
 dist/
 build/
+
+# VSCode settings
+.vscode/*
+!.vscode/settings.json
+
+# prisma
+backend/src/generated/prisma
