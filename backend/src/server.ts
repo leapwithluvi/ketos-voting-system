@@ -4,6 +4,9 @@ import morgan from 'morgan';
 import cors from 'cors';
 import session from 'express-session';
 import rootRoute from './routes/routes';
+import { notFoundHandler } from './middlewares/notFoundHandler.middleware';
+import { errorHandler } from './middlewares/error.middleware';
+import path from 'path';
 
 dotenv.config();
 
@@ -12,6 +15,8 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
@@ -40,6 +45,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.use('/api', rootRoute);
+
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
