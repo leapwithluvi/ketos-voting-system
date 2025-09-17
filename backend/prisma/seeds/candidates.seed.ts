@@ -6,19 +6,19 @@ const candidates = [
     nama: 'Rafif',
     visi: 'Nihao',
     misi: 'Ayok pakai n8n',
-    photo_url: '',
+    foto: '',
   },
   {
     nama: 'Fatar',
     visi: 'Nihao',
     misi: 'Sepuh nya PHP bukan JS',
-    photo_url: '',
+    foto: '',
   },
   {
     nama: 'Luvi',
     visi: 'Nihao',
     misi: 'Suka ML nggk suka MTK',
-    photo_url: '',
+    foto: '',
   },
 ];
 

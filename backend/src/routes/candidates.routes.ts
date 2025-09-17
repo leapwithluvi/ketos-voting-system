@@ -1,22 +1,42 @@
 import express from 'express';
 import { authorizeRole } from '../middlewares/auth.middleware';
+import {
+  createCandidate,
+  deleteCandidate,
+  getCandidate,
+  getCandidateById,
+  updateCandidate,
+} from '../controllers/candidates.controllers';
+import {
+  candidatesValidator,
+  updateCandidateValidator,
+} from '../validations/candidates.validation';
+import { validationHandler } from '../middlewares/validator.middleware';
+import { upload } from '../middlewares/uploadCandidate.middleware';
 
 const router = express.Router();
 
 // PUBLIC
-router.get('/', (req, res) => {
-  res.send('Ini halaman get candidates (admin dan user bisa liat) ');
-});
+router.get('/', getCandidate);
 
 // PRIVATE
-  router.post('/', authorizeRole(['admin']), (req, res) => {
-  res.send('Ini halaman post candidates (hanya admin) ');
-});
-router.patch('/:id', authorizeRole(['admin']), (req, res) => {
-  res.send('Ini halaman update/patch candidates (hanya admin) ');
-});
-router.delete('/:id', authorizeRole(['admin']), (req, res) => {
-  res.send('Ini delete candidates (hanya admin) ');
-});
+router.post(
+  '/',
+  authorizeRole(['admin']),
+  upload.single('foto'),
+  candidatesValidator,
+  validationHandler,
+  createCandidate,
+);
+router.get('/:id', authorizeRole(['admin']), getCandidateById);
+router.patch(
+  '/:id',
+  authorizeRole(['admin']),
+  upload.single('foto'),
+  updateCandidateValidator,
+  validationHandler,
+  updateCandidate,
+);
+router.delete('/:id', authorizeRole(['admin']), deleteCandidate);
 
 export default router;

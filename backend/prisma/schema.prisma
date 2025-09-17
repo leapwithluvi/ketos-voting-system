@@ -16,12 +16,12 @@ model User {
 }
 
 model Candidate {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  nama      String
-  visi      String
-  misi      String
-  photo_url String?
-  votes     Vote[]
+  id    String  @id @default(auto()) @map("_id") @db.ObjectId
+  nama  String?
+  visi  String?
+  misi  String?
+  foto  String?
+  votes Vote[]
 }
 
 model Vote {
