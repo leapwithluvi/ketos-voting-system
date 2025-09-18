@@ -16,3 +16,34 @@ export const createVote = async (userId: string, candidateId: string) => {
     },
   });
 };
+
+// Ambil semua vote (admin)
+export const getAllVotes = async () => {
+  return await prisma.vote.findMany({
+    include: {
+      user: { select: { id: true, nisn: true } },
+      candidate: { select: { id: true, nama: true } },
+    },
+    orderBy: { created_at: 'desc' },
+  });
+};
+
+// Ambil vote by ID (admin)
+export const getVoteById = async (voteId: string) => {
+  return await prisma.vote.findUnique({
+    where: { id: voteId },
+    include: {
+      user: { select: { id: true, nisn: true } },
+      candidate: { select: { id: true, nama: true } },
+    },
+  });
+};
+
+// Delete vote (admin)
+export const deleteVote = async (voteId: string) => {
+  const vote = await prisma.vote.findUnique({ where: { id: voteId } });
+  if (!vote) return null;
+
+  await prisma.vote.delete({ where: { id: voteId } });
+  return vote;
+};
