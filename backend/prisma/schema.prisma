@@ -16,14 +16,15 @@ model User {
 }
 
 model Candidate {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
   nama       String?
   visi       String?
   misi       String?
   foto       String?
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
   votes      Vote[]
+  VoteResult VoteResult?
 }
 
 model Vote {
@@ -37,4 +38,15 @@ model Vote {
   candidate Candidate @relation(fields: [candidate_id], references: [id])
 
   @@unique([user_id])
+}
+
+model VoteResult {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId String   @unique @db.ObjectId
+  votesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation
+  candidate Candidate @relation(fields: [candidateId], references: [id])
 }
