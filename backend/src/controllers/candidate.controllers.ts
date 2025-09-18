@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from '../lib/httpStatus';
-import * as CandidateServices from '../services/candidates.services';
+import * as CandidateServices from '../services/candidate.services';
 import { responseError, responseSuccess } from '../utils/responseTemplate';
 import { getFileUrl } from '../utils/helpers/fileUrl.helper';
 import { UPLOAD_PATHS } from '../consts/const';

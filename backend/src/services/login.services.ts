@@ -1,7 +1,4 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-
-const prisma = new PrismaClient();
+import prisma from '../model/prismaClient';
 
 /**
  * Login user by NISN and password
