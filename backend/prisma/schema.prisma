@@ -17,14 +17,29 @@ model User {
 
 model Candidate {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  nama       String?
-  visi       String?
-  misi       String?
-  foto       String?
+  no         Int
+  ketua      Ketua
+  wakil      Wakil
+  visi       String
+  misi       String
+  slogan     String
+  jurusan    String[]
   created_at DateTime    @default(now())
   updated_at DateTime    @updatedAt
   votes      Vote[]
   VoteResult VoteResult?
+}
+
+type Ketua {
+  nama  String
+  kelas String
+  foto  String?
+}
+
+type Wakil {
+  nama  String
+  kelas String
+  foto  String?
 }
 
 model Vote {
@@ -35,7 +50,7 @@ model Vote {
 
   // Relation
   user      User      @relation(fields: [user_id], references: [id])
-  candidate Candidate @relation(fields: [candidate_id], references: [id])
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id])
 }
@@ -48,5 +63,5 @@ model VoteResult {
   updatedAt   DateTime @updatedAt
 
   // Relation
-  candidate Candidate @relation(fields: [candidateId], references: [id])
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }

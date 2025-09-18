@@ -5,22 +5,72 @@ import { responseError, responseSuccess } from '../utils/responseTemplate';
 import { getFileUrl } from '../utils/helpers/fileUrl.helper';
 import { UPLOAD_PATHS } from '../consts/const';
 import { deleteFile } from '../utils/helpers/fileDelete.helper';
+import path from 'path';
+
+const cleanUploadedFiles = (files: { [fieldname: string]: Express.Multer.File[] } | undefined) => {
+  if (!files) return;
+  Object.values(files).forEach((arr) => {
+    arr.forEach((f) => {
+      const filePath = path.join(UPLOAD_PATHS.IMAGES, f.filename);
+      deleteFile(filePath);
+    });
+  });
+};
 
 export const createCandidate = async (req: Request, res: Response) => {
   try {
-    const fileName = req.file?.filename ?? null;
-    const { nama, visi, misi } = req.body;
+    const { no, ketuaNama, ketuaKelas, wakilNama, wakilKelas, visi, misi, slogan } = req.body;
 
-    if (!nama || !visi || !misi) {
-      return responseError(res, 'Field tidak boleh kosong', httpStatus.BAD_REQUEST, undefined);
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+
+    const ketuaFoto = files?.ketuaImg?.[0]?.filename ?? null;
+    const wakilFoto = files?.wakilImg?.[0]?.filename ?? null;
+    const jurusanImg = files?.jurusanImg?.map((f) => f.filename) ?? [];
+
+    if (!no || !ketuaNama || !ketuaKelas || !wakilNama || !wakilKelas || !visi || !misi) {
+      if (files) {
+        Object.values(files).forEach((arr) => {
+          arr.forEach((f) => {
+            const filePath = path.join(UPLOAD_PATHS.IMAGES, f.filename);
+            deleteFile(filePath);
+          });
+        });
+      }
+      return responseError(res, 'Required fields are missing', httpStatus.BAD_REQUEST, undefined);
     }
 
-    const candidate = await CandidateServices.createCandidate(nama, visi, misi, fileName);
+    const candidateData = {
+      no: parseInt(no),
+      ketua: { nama: ketuaNama, kelas: ketuaKelas, foto: ketuaFoto },
+      wakil: { nama: wakilNama, kelas: wakilKelas, foto: wakilFoto },
+      visi,
+      misi,
+      slogan,
+      jurusan: jurusanImg,
+    };
 
-    return responseSuccess(res, 'Kandidat berhasil dibuat', httpStatus.CREATED, {
+    const candidate = await CandidateServices.createCandidate(candidateData);
+
+    const result = {
       ...candidate,
-      imageUrl: candidate.foto ? getFileUrl(req, candidate.foto, UPLOAD_PATHS.IMAGES) : null,
-    });
+      ketua: {
+        ...candidate.ketua,
+        imageUrl: candidate.ketua.foto
+          ? getFileUrl(req, candidate.ketua.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      wakil: {
+        ...candidate.wakil,
+        imageUrl: candidate.wakil.foto
+          ? getFileUrl(req, candidate.wakil.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      jurusan: candidate.jurusan.map((j) => getFileUrl(req, j, UPLOAD_PATHS.IMAGES)),
+    };
+
+    return responseSuccess(res, 'Candidate created successfully', httpStatus.CREATED, result);
   } catch (error: any) {
     return responseError(res, error.message, httpStatus.INTERNAL_SERVER_ERROR, undefined);
   }
@@ -32,7 +82,19 @@ export const getCandidate = async (req: Request, res: Response) => {
 
     const result = candidates.map((candidate) => ({
       ...candidate,
-      imageUrl: candidate.foto ? getFileUrl(req, candidate.foto, UPLOAD_PATHS.IMAGES) : null,
+      ketua: {
+        ...candidate.ketua,
+        imageUrl: candidate.ketua.foto
+          ? getFileUrl(req, candidate.ketua.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      wakil: {
+        ...candidate.wakil,
+        imageUrl: candidate.wakil.foto
+          ? getFileUrl(req, candidate.wakil.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      jurusan: candidate.jurusan.map((j) => getFileUrl(req, j, UPLOAD_PATHS.IMAGES)),
     }));
 
     return responseSuccess(res, 'Semua kandidat ditemukan', httpStatus.OK, result);
@@ -52,7 +114,19 @@ export const getCandidateById = async (req: Request, res: Response) => {
 
     const result = {
       ...candidate,
-      imageUrl: candidate.foto ? getFileUrl(req, candidate.foto, UPLOAD_PATHS.IMAGES) : null,
+      ketua: {
+        ...candidate.ketua,
+        imageUrl: candidate.ketua.foto
+          ? getFileUrl(req, candidate.ketua.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      wakil: {
+        ...candidate.wakil,
+        imageUrl: candidate.wakil.foto
+          ? getFileUrl(req, candidate.wakil.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      jurusan: candidate.jurusan.map((j) => getFileUrl(req, j, UPLOAD_PATHS.IMAGES)),
     };
 
     return responseSuccess(res, 'Kandidat berhasil ditemukan', httpStatus.OK, result);
@@ -64,27 +138,83 @@ export const getCandidateById = async (req: Request, res: Response) => {
 export const updateCandidate = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
-    const fileName = req.file?.filename ?? null;
-    const { nama, visi, misi } = req.body;
+    const { no, ketuaNama, ketuaKelas, wakilNama, wakilKelas, visi, misi, slogan } = req.body;
 
-    if (fileName) {
-      const oldCandidate = await CandidateServices.getCandidateById(id);
-      if (oldCandidate?.foto) {
-        const filePath = `${UPLOAD_PATHS.IMAGES}/${oldCandidate.foto}`;
-        deleteFile(filePath)
+    const files = req.files as {
+      [fieldname: string]: Express.Multer.File[];
+    };
+
+    const ketuaFoto = files?.ketuaImg?.[0]?.filename;
+    const wakilFoto = files?.wakilImg?.[0]?.filename;
+    const jurusanImg = files?.jurusanImg?.map((f) => f.filename);
+
+    const oldCandidate = await CandidateServices.getCandidateById(id);
+    if (!oldCandidate) {
+      return responseError(res, 'Candidate not found', httpStatus.NOT_FOUND, undefined);
+    }
+
+    const updateData: any = {};
+    if (no) updateData.no = parseInt(no);
+
+    if (ketuaNama || ketuaKelas || ketuaFoto) {
+      updateData.ketua = {
+        nama: ketuaNama ?? oldCandidate.ketua.nama,
+        kelas: ketuaKelas ?? oldCandidate.ketua.kelas,
+        foto: ketuaFoto ?? oldCandidate.ketua.foto,
+      };
+
+      if (ketuaFoto && oldCandidate.ketua.foto) {
+        const filePath = `${UPLOAD_PATHS.IMAGES}/${oldCandidate.ketua.foto}`;
+        deleteFile(filePath);
       }
     }
 
-    const candidate = await CandidateServices.updateCandidate(id, nama, visi, misi, fileName);
+    if (wakilNama || wakilKelas || wakilFoto) {
+      updateData.wakil = {
+        nama: wakilNama ?? oldCandidate.wakil.nama,
+        kelas: wakilKelas ?? oldCandidate.wakil.kelas,
+        foto: wakilFoto ?? oldCandidate.wakil.foto,
+      };
 
-    if (!candidate) {
-      return responseError(res, 'Kandidat tidak ditemukan', httpStatus.NOT_FOUND, undefined);
+      if (wakilFoto && oldCandidate.wakil.foto) {
+        const filePath = `${UPLOAD_PATHS.IMAGES}/${oldCandidate.wakil.foto}`;
+        deleteFile(filePath);
+      }
     }
 
-    return responseSuccess(res, 'Kandidat berhasil diperbarui', httpStatus.OK, {
+    if (visi) updateData.visi = visi;
+    if (misi) updateData.misi = misi;
+    if (slogan) updateData.slogan = slogan;
+    if (jurusanImg && jurusanImg.length > 0) {
+      if (oldCandidate.jurusan && oldCandidate.jurusan.length > 0) {
+        oldCandidate.jurusan.forEach((j) => {
+          const filePath = `${UPLOAD_PATHS.IMAGES}/${j}`;
+          deleteFile(filePath);
+        });
+      }
+      updateData.jurusan = jurusanImg;
+    }
+
+    const candidate = await CandidateServices.updateCandidate(id, updateData);
+
+    const result = {
       ...candidate,
-      imageUrl: candidate.foto ? getFileUrl(req, candidate.foto, UPLOAD_PATHS.IMAGES) : null,
-    });
+      ketua: {
+        ...candidate.ketua,
+        imageUrl: candidate.ketua.foto
+          ? getFileUrl(req, candidate.ketua.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      wakil: {
+        ...candidate.wakil,
+        imageUrl: candidate.wakil.foto
+          ? getFileUrl(req, candidate.wakil.foto, UPLOAD_PATHS.IMAGES)
+          : null,
+      },
+      jurusan: candidate.jurusan.map((j) => getFileUrl(req, j, UPLOAD_PATHS.IMAGES)),
+    };
+
+    return responseSuccess(res, 'Candidate updated successfully', httpStatus.OK, result);
   } catch (error: any) {
     return responseError(res, error.message, httpStatus.INTERNAL_SERVER_ERROR, undefined);
   }
@@ -100,14 +230,26 @@ export const deleteCandidate = async (req: Request, res: Response) => {
 
     const candidate = await CandidateServices.deleteCandidate(id);
 
-    if (candidateToDelete.foto) {
-      const filePath = `${UPLOAD_PATHS.IMAGES}/${candidateToDelete.foto}`
+    if (candidateToDelete.ketua?.foto) {
+      const filePath = `${UPLOAD_PATHS.IMAGES}/${candidateToDelete.ketua.foto}`;
       deleteFile(filePath);
+    }
+
+    if (candidateToDelete.wakil?.foto) {
+      const filePath = `${UPLOAD_PATHS.IMAGES}/${candidateToDelete.wakil.foto}`;
+      deleteFile(filePath);
+    }
+
+    if (candidateToDelete.jurusan?.length > 0) {
+      candidateToDelete.jurusan.forEach((j) => {
+        const filePath = `${UPLOAD_PATHS.IMAGES}/${j}`;
+        deleteFile(filePath);
+      });
     }
 
     return responseSuccess(res, 'Kandidat berhasil dihapus', httpStatus.OK, {
       id: candidate.id,
-      nama: candidate.nama,
+      no: candidate.no,
     });
   } catch (error: any) {
     return responseError(res, error.message, httpStatus.INTERNAL_SERVER_ERROR, undefined);

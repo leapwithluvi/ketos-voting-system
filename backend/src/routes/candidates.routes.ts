@@ -23,7 +23,11 @@ router.get('/', getCandidate);
 router.post(
   '/',
   authorizeRole(['admin']),
-  upload.single('foto'),
+  upload.fields([
+    { name: 'ketuaImg', maxCount: 1 },
+    { name: 'wakilImg', maxCount: 1 },
+    { name: 'jurusanImg', maxCount: 2 },
+  ]),
   candidatesValidator,
   validationHandler,
   createCandidate,
@@ -32,7 +36,11 @@ router.get('/:id', authorizeRole(['admin']), getCandidateById);
 router.patch(
   '/:id',
   authorizeRole(['admin']),
-  upload.single('foto'),
+  upload.fields([
+    { name: 'ketuaImg', maxCount: 1 },
+    { name: 'wakilImg', maxCount: 1 },
+    { name: 'jurusanImg', maxCount: 2 },
+  ]),
   updateCandidateValidator,
   validationHandler,
   updateCandidate,
