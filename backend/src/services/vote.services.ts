@@ -22,7 +22,15 @@ export const getAllVotes = async () => {
   return await prisma.vote.findMany({
     include: {
       user: { select: { id: true, nisn: true } },
-      candidate: { select: { id: true, nama: true } },
+      candidate: {
+        select: {
+          id: true,
+          no: true,
+          ketua: true, // ambil object ketua (nama, kelas, foto)
+          wakil: true, // ambil object wakil
+          slogan: true,
+        },
+      },
     },
     orderBy: { created_at: 'desc' },
   });
@@ -34,7 +42,15 @@ export const getVoteById = async (voteId: string) => {
     where: { id: voteId },
     include: {
       user: { select: { id: true, nisn: true } },
-      candidate: { select: { id: true, nama: true } },
+      candidate: {
+        select: {
+          id: true,
+          no: true,
+          ketua: true,
+          wakil: true,
+          slogan: true,
+        },
+      },
     },
   });
 };
