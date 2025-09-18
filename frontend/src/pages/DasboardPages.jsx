@@ -1,33 +1,26 @@
-import React from "react";
-
-const candidates = [
-  {
-    no: 1,
-    ketua: { nama: "Rasty", kelas: "XI AKL 2", img: "/rasty.png" },
-    wakil: { nama: "Ummu", kelas: "X PM 1", img: "/ummu.png" },
-    slogan: "Aksi nyata, Bukan kata",
-    jurusan: ["/logo_akl.png", "/logo_pm.png"],
-  },
-  {
-    no: 2,
-    ketua: { nama: "Syarifah", kelas: "XI KUL 2", img: "/rasty.jpg" },
-    wakil: { nama: "Ihsan", kelas: "X AKL 1", img: "/ummu.jpg" },
-    slogan: "Bersama nomor dua tiada tandingannya",
-    jurusan: ["/logo_kul.png", "/logo_akl.png"],
-  },
-  {
-    no: 3,
-    ketua: { nama: "Nanda", kelas: "XI MPLB 1", img: "/nanda.png" },
-    wakil: { nama: "Dhea", kelas: "X AKL 2", img: "/dhea.png" },
-    slogan: "Bergerak bersama, Sejahtera untuk semua",
-    jurusan: ["/logo_mplb.png", "/logo_akl.png"],
-  },
-];
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Dashboard = () => {
+  const [candidates, setCandidates] = useState([]);
+
+  useEffect(() => {
+    const fetchCandidates = async () => {
+      try {
+        const res = await axios.get("http://localhost:3000/api/candidates/", {
+          withCredentials: true,
+        });
+        setCandidates(res.data.data);
+      } catch (err) {
+        console.error("Failed to fetch candidates", err);
+      }
+    };
+
+    fetchCandidates();
+  }, []);
+
   return (
     <main className="w-full min-h-screen bg-white flex flex-col">
-
       {/*  Navbar */}
       <nav className="w-full bg-red-600 shadow-md px-6 py-3 flex items-center justify-between sticky top-0 z-20">
         {/* Logo */}
@@ -37,13 +30,8 @@ const Dashboard = () => {
 
         {/* User */}
         <div className="flex items-center gap-3">
-          <span className="text-gray-700 font-medium text-sm">
-            Hi, User
-          </span>
-          <img
-            src="/user.png"
-            className="w-10 h-10 invert"
-          />
+          <span className="text-gray-700 font-medium text-sm">Hi, User</span>
+          <img src="/user.png" className="w-10 h-10 invert" />
         </div>
       </nav>
 
@@ -83,7 +71,7 @@ const Dashboard = () => {
                 NO. {c.no}
               </h3>
               <h2 className="text-lg font-bold text-gray-900">
-                {c.ketua.nama.split(" ")[0]} & {c.wakil.nama.split(" ")[0]}
+                {c.ketua.nama} & {c.wakil.nama}
               </h2>
               <p className="text-gray-500 text-xs mb-6">{c.slogan}</p>
 
@@ -92,7 +80,7 @@ const Dashboard = () => {
                 {/* Ketua */}
                 <div className="bg-gray-50 rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
                   <img
-                    src={c.ketua.img}
+                    src={c.ketua.imageUrl}
                     alt={c.ketua.nama}
                     className="w-28 h-36 object-cover rounded-lg mb-2"
                   />
@@ -104,12 +92,14 @@ const Dashboard = () => {
                 {/* Wakil */}
                 <div className="bg-gray-50 rounded-xl p-4 flex flex-col items-center text-center shadow-sm">
                   <img
-                    src={c.wakil.img}
+                    src={c.wakil.imageUrl}
                     alt={c.wakil.nama}
                     className="w-28 h-36 object-cover rounded-lg mb-2"
                   />
                   <p className="font-semibold text-sm">{c.wakil.nama}</p>
-                  <p className="text-xs text-gray-500">Calon Wakil Ketua Osis</p>
+                  <p className="text-xs text-gray-500">
+                    Calon Wakil Ketua Osis
+                  </p>
                   <p className="text-xs text-gray-600">{c.wakil.kelas}</p>
                 </div>
               </div>
