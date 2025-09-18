@@ -6,7 +6,7 @@ import {
   getCandidate,
   getCandidateById,
   updateCandidate,
-} from '../controllers/candidates.controllers';
+} from '../controllers/candidate.controllers';
 import {
   candidatesValidator,
   updateCandidateValidator,

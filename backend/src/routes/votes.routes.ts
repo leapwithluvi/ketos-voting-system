@@ -1,10 +1,8 @@
-import express from 'express'
+import express from 'express';
+import { voteCandidate } from '../controllers/vote.controllers';
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/', (req, res) => {
-    res.send('Ini vote (hanya yang udah login)')
-})
-
+router.post('/',  voteCandidate);
 
 export default router;
