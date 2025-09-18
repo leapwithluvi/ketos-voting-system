@@ -11,18 +11,27 @@
 ketos-voting-system/       # Root repo
 │
 ├── backend/               # Backend
-│   ├── node_modules/
+│   ├── .vscode/
+│   ├── prisma/
 │   ├── src/
+│   ├── .env.example
+│   ├── .eslintrc.json
+│   ├── .prettierrc
+│   ├── README.md
+│   ├── package-lock.json
 │   ├── package.json
-│   ├── .env
-│   └── README.md
+│   └── tsconfig.json
 │
 ├── frontend/              # Frontend
-│   ├── node_modules/
 │   ├── public/
 │   ├── src/
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
 │   ├── package.json
-│   └── README.md
+│   └── vite.config.js
 │
 ├── .gitignore
 ├── LICENSE
@@ -44,17 +53,18 @@ ketos-voting-system/       # Root repo
 
 ## 🛠️ Tech Stack
 **Frontend (FE):**  
-- ...
+- React
+- Tailwind CSS
 
 **Backend (BE):**  
-- Node.js + Express.js  
-- MySQL / MariaDB / PostgreSQL
+- Node.js + Express.js (TypeScript) 
+- MongoDB
 - Prisma
 - REST API (`/login`, `/candidates`, `/votes`)  
 
 ---
 
-## 🧩 Database Schema
+<!-- ## 🧩 Database Schema
 
 **Users Table**
 - `id` (PK, auto increment)  
@@ -76,7 +86,7 @@ ketos-voting-system/       # Root repo
 - `candidate_id` (FK → candidates.id)  
 - `created_at` (timestamp, default current time)  
 
----
+--- -->
 <!-- 
 ## 🚀 Cara Menjalankan
 
