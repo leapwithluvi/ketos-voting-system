@@ -17,7 +17,7 @@ model User {
 
 model Candidate {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
-  no         Int
+  no         Int         @unique
   ketua      Ketua
   wakil      Wakil
   visi       String

@@ -14,3 +14,6 @@ build/
 
 # prisma
 backend/src/generated/prisma
+
+# public/images
+backend/public/images

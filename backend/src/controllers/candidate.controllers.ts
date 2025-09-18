@@ -7,16 +7,6 @@ import { UPLOAD_PATHS } from '../consts/const';
 import { deleteFile } from '../utils/helpers/fileDelete.helper';
 import path from 'path';
 
-const cleanUploadedFiles = (files: { [fieldname: string]: Express.Multer.File[] } | undefined) => {
-  if (!files) return;
-  Object.values(files).forEach((arr) => {
-    arr.forEach((f) => {
-      const filePath = path.join(UPLOAD_PATHS.IMAGES, f.filename);
-      deleteFile(filePath);
-    });
-  });
-};
-
 export const createCandidate = async (req: Request, res: Response) => {
   try {
     const { no, ketuaNama, ketuaKelas, wakilNama, wakilKelas, visi, misi, slogan } = req.body;
