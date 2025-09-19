@@ -4,3 +4,33 @@
 body {
   font-family: 'Montserrat', sans-serif;
 }
+
+.swal-confirm-button {
+  background-color: #16a34a; /* hijau 600 */
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+  border: none;
+  margin-right: 8px;
+}
+
+.swal-confirm-button:hover {
+  background-color: #15803d; /* hijau 700 */
+}
+
+.swal-cancel-button {
+  background-color: #dc2626; /* merah 600 */
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+  border: none;
+  margin-left: 8px;
+}
+
+.swal-cancel-button:hover {
+  background-color: #b91c1c; /* merah 700 */
+}

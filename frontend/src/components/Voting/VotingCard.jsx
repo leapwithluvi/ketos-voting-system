@@ -14,6 +14,11 @@ const VotingCard = ({ candidate, user }) => {
       showCancelButton: true,
       confirmButtonText: "Ya, Pilih",
       cancelButtonText: "Batal",
+      customClass: {
+      confirmButton: 'swal-confirm-button',
+      cancelButton: 'swal-cancel-button'
+  },
+      buttonsStyling: false
     });
 
     if (result.isConfirmed) {
@@ -37,6 +42,11 @@ const VotingCard = ({ candidate, user }) => {
           icon: "error",
           title: "Voting Gagal",
           text: err.response?.data?.message || "Terjadi error",
+          confirmButtonText: "OK",
+          customClass: {
+          confirmButton: 'swal-confirm-button'
+    },
+      buttonsStyling: false
         });
       }
     }

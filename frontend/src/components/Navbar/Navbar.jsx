@@ -13,7 +13,12 @@ const Navbar = ({ user, setUser }) => {
       showCancelButton: true,
       confirmButtonText: "Ya, Logout",
       cancelButtonText: "Batal",
-    });
+      customClass: {
+      confirmButton: 'swal-confirm-button',
+      cancelButton: 'swal-cancel-button'
+  },
+      buttonsStyling: false
+});
 
     if (result.isConfirmed) {
       try {
