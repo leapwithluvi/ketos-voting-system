@@ -40,9 +40,9 @@ export const getCandidate = async () => {
       created_at: true,
       updated_at: true,
     },
+    orderBy: { no: 'asc' },
   });
 };
-
 
 export const getCandidateById = async (id: string) => {
   return prisma.candidate.findUnique({
