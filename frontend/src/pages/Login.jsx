@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/api";
 import FormLogin from "../components/FormLogin/FormLogin";
+import Swal from "sweetalert2";
 
-const LoginPage = () => {
+const LoginPage = ({ setUser }) => {
   const [nisn, setNisn] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -15,6 +16,10 @@ const LoginPage = () => {
     setNisn(e.target.value.replace(/[^0-9]/g, ""));
   };
 
+  const handleNumberOnlyPassword = (e) => {
+    setPassword(e.target.value.replace(/[^0-9]/g, ""));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -23,9 +28,24 @@ const LoginPage = () => {
       const response = await api.post("auth/login", { nisn, password });
       console.log("Login sukses", response.data);
 
+      setUser(response.data.data);
+
+      Swal.fire({
+        icon: "success",
+        title: "Login Berhasil",
+        text: `Selamat datang, ${response.data.data.nama}`,
+        showConfirmButton: false,
+        timer: 1500,
+      });
+      console.log("Response API:", response.data);
+
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login gagal");
+      Swal.fire({
+        icon: "error",
+        title: "Login Gagal",
+        text: err.response?.data?.message || "NISN / Password salah",
+      });
     } finally {
       setLoading(false);
     }
@@ -39,7 +59,7 @@ const LoginPage = () => {
         loading={loading}
         error={error}
         handleNumberOnly={handleNumberOnly}
-        setPassword={setPassword}
+        handleNumberOnlyPassword={handleNumberOnlyPassword}
         handleSubmit={handleSubmit}
       />
     </main>

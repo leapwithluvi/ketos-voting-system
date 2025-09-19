@@ -1,6 +1,14 @@
 import React from "react";
 
-const FormLogin = ({nisn, password, loading, error, handleNumberOnly, setPassword, handleSubmit }) => {
+const FormLogin = ({
+  nisn,
+  password,
+  loading,
+  error,
+  handleNumberOnly,
+  handleNumberOnlyPassword,
+  handleSubmit,
+}) => {
   return (
     <form
       onSubmit={handleSubmit}
@@ -35,7 +43,7 @@ const FormLogin = ({nisn, password, loading, error, handleNumberOnly, setPasswor
           type="password"
           value={password}
           maxLength={8}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={handleNumberOnlyPassword}
           className="w-full rounded-lg border border-gray-200 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-400 hover:border-red-400"
           placeholder="Masukkan password"
           required

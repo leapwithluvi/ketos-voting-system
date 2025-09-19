@@ -6,10 +6,14 @@ import "./index.css";
 import LoginPage from "./pages/Login";
 import DashboardPage from "./pages/Dasboard";
 import NotFoundPage from "./pages/NotFound";
+import VotingPage from "./pages/Voting";
+import SuccessVote from "./pages/SuccessVote";
 import LoadingPage from "./pages/Loading";
+// import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 500);
@@ -21,8 +25,10 @@ const App = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} />
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage setUser={setUser} />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/voting" element={<VotingPage />} />
+      <Route path="/success/:candidateNo" element={<SuccessVote />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

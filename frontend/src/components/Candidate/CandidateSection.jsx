@@ -1,5 +1,5 @@
 import React from "react";
-import CandidateCard from "../CandidateCard/CandidateCard";
+import CandidateCard from "../Candidate/CandidateCard";
 
 const CandidateSection = ({ candidates }) => {
   return (
