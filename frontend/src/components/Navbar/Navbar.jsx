@@ -1,16 +1,41 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/api";
+import Swal from "sweetalert2";
 
-const Navbar = ({ user }) => {
+const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    try {
-      await api.post("/user/logout", {});
-      navigate("/");
-    } catch (err) {
-      console.error("Logout gagal", err);
+    const result = await Swal.fire({
+      title: "Apakah Anda yakin ingin logout?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Logout",
+      cancelButtonText: "Batal",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.post("/user/logout", {});
+        Swal.fire({
+          icon: "success",
+          title: "Logout Berhasil",
+          showConfirmButton: false,
+          timer: 1000,
+        });
+      } catch (err) {
+        console.error("Logout gagal", err);
+        Swal.fire({
+          icon: "error",
+          title: "Logout Gagal",
+          text: err.response?.data?.message || "Terjadi kesalahan",
+        });
+      } finally {
+        setUser(null);
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
+      }
     }
   };
 
@@ -30,7 +55,6 @@ const Navbar = ({ user }) => {
               className="rounded-full bg-white w-8 h-8 flex items-center justify-center"
               title="logout"
             >
-              {/* icon logout / user */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
