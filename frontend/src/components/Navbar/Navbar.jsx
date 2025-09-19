@@ -15,7 +15,7 @@ const Navbar = ({ user }) => {
   };
 
   return (
-    <nav className="w-full bg-red-600 shadow-md px-8 py-3 flex items-center justify-between sticky top-0 z-20">
+    <nav className="w-full bg-red-600 shadow-md px-8 py-3 sm:px-18 flex items-center justify-between sticky top-0 z-20">
       <div className="flex items-center gap-2">
         <img src="./favico.png" alt="Logo" className="w-10 h-10" />
       </div>
