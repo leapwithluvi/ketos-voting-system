@@ -1,7 +1,7 @@
 import React from "react";
 import { useParams, useLocation, Navigate } from "react-router-dom";
 
-const SuccessVote = () => {
+const SuccessVotePage = () => {
   const { candidateNo } = useParams();
   const location = useLocation();
   const user = location.state?.user || JSON.parse(localStorage.getItem("user"));
@@ -28,4 +28,4 @@ const SuccessVote = () => {
   );
 };
 
-export default SuccessVote;
+export default SuccessVotePage;

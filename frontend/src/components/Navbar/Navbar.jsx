@@ -16,7 +16,7 @@ const Navbar = ({ user, setUser }) => {
       customClass: {
       confirmButton: 'swal-confirm-button',
       cancelButton: 'swal-cancel-button'
-  },
+    },
       buttonsStyling: false
 });
 

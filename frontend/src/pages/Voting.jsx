@@ -3,17 +3,31 @@ import { api } from "../api/api";
 import Navbar from "../components/Navbar/Navbar";
 import VotingSection from "../components/Voting/VotingSection";
 
-const Voting = () => {
-  const [user, setUser] = useState([]);
+const VotingPage = () => {
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [candidates, setCandidates] = useState([]);
+
+  useEffect(() => {
+    if (!user) {
+      setCandidates([]);
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get("user/me");
+        const res = await api.get("/user/me");
         setUser(res.data.data);
+        localStorage.setItem("user", JSON.stringify(res.data.data));
       } catch (err) {
-        console.error("Failed to fetch user", err);
+        setUser(null);
+        localStorage.removeItem("user");
+        navigate("/login", { replace: true });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -38,4 +52,4 @@ const Voting = () => {
   );
 };
 
-export default Voting;
+export default VotingPage;

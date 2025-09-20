@@ -1,4 +1,3 @@
-// src/utils/helpers/fileUpload.helper.ts
 import { Request } from 'express';
 import multer, { FileFilterCallback } from 'multer';
 import fs from 'fs';
