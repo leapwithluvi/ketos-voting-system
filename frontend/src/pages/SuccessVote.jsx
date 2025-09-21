@@ -17,7 +17,7 @@ const SuccessVotePage = () => {
           🎉 Selamat, {user.nama}!
         </h1>
         <p className="mt-4 text-lg text-gray-700">
-          Anda berhasil memilih kandidat nomor{" "}
+          Anda berhasil memilih ketua osis dan wakil ketua osis tahun 2025/2026
           <span className="font-bold">{candidateNo}</span>.
         </p>
         <p className="mt-2 text-sm text-gray-500">

@@ -35,6 +35,11 @@ const Navbar = ({ user, setUser }) => {
           icon: "error",
           title: "Logout Gagal",
           text: err.response?.data?.message || "Terjadi kesalahan",
+          customClass: {
+          confirmButton: 'swal-confirm-button',
+          cancelButton: 'swal-cancel-button'
+    },
+      buttonsStyling: false
         });
       } finally {
         setUser(null);

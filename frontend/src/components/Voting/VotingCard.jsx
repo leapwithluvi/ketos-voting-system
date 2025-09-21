@@ -90,11 +90,11 @@ const VotingCard = ({ candidate, user }) => {
         <div className="flex flex-col space-y-3 mt-6 w-full md:flex-row md:space-x-4 md:space-y-0 md:w-auto">
           <button
             onClick={handleVote}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto"
           >
             VOTING
           </button>
-          <button className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto">
+          <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto">
             VISI & MISI
           </button>
         </div>
