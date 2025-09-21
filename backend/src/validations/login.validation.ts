@@ -4,11 +4,16 @@ export const loginValidator = [
   body('nisn')
     .notEmpty()
     .withMessage('NISN wajib diisi')
-    .matches(/^\d{10}$/)
-    .withMessage('NISN harus 9-10 digit'),
+    .isLength({ min: 9, max: 10 })
+    .withMessage('NISN harus 9-10 digit.')
+    .isString()
+    .withMessage('NISN harus berupa digit.'),
+
   body('password')
     .notEmpty()
     .withMessage('Password wajib diisi')
-    .matches(/^\d{8}$/)
-    .withMessage('Password harus 8 digit, format DDMMYYYY'),
+    .isLength({ min: 8, max: 8 })
+    .withMessage('Password harus 8 digit, format DDMMYYYY.')
+    .isString()
+    .withMessage('Password harus berupa digit.'),
 ];
