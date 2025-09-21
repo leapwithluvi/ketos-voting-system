@@ -1,11 +1,11 @@
 import { body } from 'express-validator';
 
 export const candidatesValidator = [
-  body('nama')
+  body('no')
     .notEmpty()
-    .withMessage('Nama wajib diisi')
-    .isString()
-    .withMessage('Nama harus berupa string'),
+    .withMessage('No wajib diisi')
+    .isNumeric()
+    .withMessage('No harus berupa Numeric'),
   body('visi')
     .notEmpty()
     .withMessage('Visi wajib diisi')
@@ -16,12 +16,19 @@ export const candidatesValidator = [
     .withMessage('Misi wajib diisi')
     .isString()
     .withMessage('Misi harus berupa string'),
+  body('slogan')
+    .notEmpty()
+    .withMessage('Slogan wajib diisi')
+    .isString()
+    .withMessage('Slogan harus berupa string'),
 ];
 
 export const updateCandidateValidator = [
-  body('nama').optional().isString().withMessage('Nama harus berupa string'),
+  body('no').optional().isNumeric().withMessage('No harus berupa Numeric'),
 
   body('visi').optional().isString().withMessage('Visi harus berupa string'),
 
   body('misi').optional().isString().withMessage('Misi harus berupa string'),
+
+  body('slogan').optional().isString().withMessage('Slogan harus berupa string'),
 ];

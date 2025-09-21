@@ -3,6 +3,8 @@ import { body } from 'express-validator';
 export const loginValidator = [
   body('nisn')
     .notEmpty()
+    .withMessage('NISN wajib diisi')
+    .matches(/^\d{10}$/)
     .withMessage('NISN harus 9-10 digit'),
   body('password')
     .notEmpty()

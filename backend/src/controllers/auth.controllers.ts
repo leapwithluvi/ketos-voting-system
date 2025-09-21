@@ -53,3 +53,14 @@ export const logout = (req: Request, res: Response) => {
     return responseSuccess(res, 'Logout berhasil', httpStatus.OK, undefined);
   });
 };
+
+// USER GET CURRENT
+export const getCurrentUser = (req: Request, res: Response) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return responseError(res, 'User tidak login', 401, undefined);
+  }
+
+  return responseSuccess(res, 'Current user', 200, user);
+};

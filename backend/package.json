@@ -19,7 +19,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@prisma/client": "^6.16.1",
+    "@prisma/client": "^6.16.2",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -29,7 +29,8 @@
     "express-validator": "^7.2.1",
     "mongoose": "^8.18.1",
     "morgan": "^1.10.1",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "prisma": "^6.16.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

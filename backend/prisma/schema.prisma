@@ -16,12 +16,30 @@ model User {
 }
 
 model Candidate {
-  id    String  @id @default(auto()) @map("_id") @db.ObjectId
-  nama  String?
-  visi  String?
-  misi  String?
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  no         Int         @unique
+  ketua      Ketua
+  wakil      Wakil
+  visi       String
+  misi       String
+  slogan     String
+  jurusan    String[]
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  votes      Vote[]
+  VoteResult VoteResult?
+}
+
+type Ketua {
+  nama  String
+  kelas String
   foto  String?
-  votes Vote[]
+}
+
+type Wakil {
+  nama  String
+  kelas String
+  foto  String?
 }
 
 model Vote {
@@ -32,5 +50,18 @@ model Vote {
 
   // Relation
   user      User      @relation(fields: [user_id], references: [id])
-  candidate Candidate @relation(fields: [candidate_id], references: [id])
+  candidate Candidate @relation(fields: [candidate_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id])
+}
+
+model VoteResult {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  candidateId String   @unique @db.ObjectId
+  votesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relation
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }

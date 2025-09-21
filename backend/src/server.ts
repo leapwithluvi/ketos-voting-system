@@ -13,7 +13,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FE_URL,
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use(express.urlencoded({ extended: true }));
@@ -25,7 +30,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60, // 1 jam
+      maxAge: 1000 * 60 * 20, // 20 menit
       httpOnly: true,
       secure: false, // true jika pakai HTTPS
       sameSite: 'lax',
