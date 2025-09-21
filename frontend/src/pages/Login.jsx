@@ -48,6 +48,11 @@ const LoginPage = ({ setUser }) => {
         icon: "error",
         title: "Login Gagal",
         text: err.response?.data?.message || "NISN / Password salah",
+        customClass: {
+        confirmButton: 'swal-confirm-button',
+        cancelButton: 'swal-cancel-button'
+    },
+      buttonsStyling: false
       });
     } finally {
       setLoading(false);
