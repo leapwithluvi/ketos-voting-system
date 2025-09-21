@@ -3,7 +3,6 @@ import { api } from "../api/api";
 import Navbar from "../components/Navbar/Navbar";
 import Hero from "../components/Hero/Hero";
 import CandidateSection from "../components/Candidate/CandidateSection";
-import { Navigate } from "react-router-dom";
 
 const DashboardPage = () => {
   const [user, setUser] = useState(() => {
@@ -12,6 +11,13 @@ const DashboardPage = () => {
   });
 
   const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setCandidates([]);
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -22,6 +28,7 @@ const DashboardPage = () => {
       } catch (err) {
         setUser(null);
         localStorage.removeItem("user");
+        navigate("/login", { replace: true });
       } finally {
         setLoading(false);
       }

@@ -26,20 +26,23 @@ const LoginPage = ({ setUser }) => {
     setLoading(true);
     try {
       const response = await api.post("auth/login", { nisn, password });
-      console.log("Login sukses", response.data);
-
-      setUser(response.data.data);
+      const loggedUser = response.data.data;
+      setUser(loggedUser);
 
       Swal.fire({
         icon: "success",
         title: "Login Berhasil",
-        text: `Selamat datang, ${response.data.data.nama}`,
+        text: `Selamat datang, ${loggedUser.nisn}`,
         showConfirmButton: false,
         timer: 1500,
       });
-      console.log("Response API:", response.data);
 
-      navigate("/dashboard");
+      // Cek role dan arahkan
+      if (loggedUser.role === "admin") {
+        navigate("/admin/candidates");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       Swal.fire({
         icon: "error",

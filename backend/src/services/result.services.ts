@@ -24,10 +24,18 @@ export const updateCandidateVoteCount = async (candidateId: string) => {
   }
 };
 
-// Ambil semua hasil voting (admin)
 export const getVoteResults = async () => {
-  return await prisma.voteResult.findMany({
+  const results = await prisma.voteResult.findMany({
     include: { candidate: true },
     orderBy: { votesCount: 'desc' },
   });
+
+  return results.map((r) => ({
+    ...r,
+    candidate: {
+      ...r.candidate,
+      displayName: `${r.candidate.ketua.nama} & ${r.candidate.wakil.nama}`,
+      description: r.candidate.slogan || r.candidate.visi,
+    },
+  }));
 };

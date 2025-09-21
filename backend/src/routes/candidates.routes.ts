@@ -3,7 +3,6 @@ import { authorizeRole } from '../middlewares/auth.middleware';
 import {
   createCandidate,
   deleteCandidate,
-  getCandidate,
   getCandidateById,
   updateCandidate,
 } from '../controllers/candidate.controllers';
@@ -13,11 +12,9 @@ import {
 } from '../validations/candidates.validation';
 import { validationHandler } from '../middlewares/validator.middleware';
 import { upload } from '../middlewares/uploadCandidate.middleware';
+import { getCandidate } from '../services/candidate.services';
 
 const router = express.Router();
-
-// PUBLIC
-router.get('/', getCandidate);
 
 // PRIVATE
 router.post(
@@ -32,6 +29,9 @@ router.post(
   validationHandler,
   createCandidate,
 );
+// GET all candidates (admin)
+router.get('/', authorizeRole(['admin']), getCandidate);
+
 router.get('/:id', authorizeRole(['admin']), getCandidateById);
 router.patch(
   '/:id',
