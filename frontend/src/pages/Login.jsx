@@ -32,7 +32,7 @@ const LoginPage = ({ setUser }) => {
       Swal.fire({
         icon: "success",
         title: "Login Berhasil",
-        text: `Selamat datang, ${loggedUser.nisn}`,
+        text: `Selamat datang, ${loggedUser.nama || loggedUser.nisn}`,
         showConfirmButton: false,
         timer: 1500,
       });

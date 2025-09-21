@@ -2,9 +2,40 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/api";
 import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const VotingCard = ({ candidate, user }) => {
   const navigate = useNavigate();
+
+    const handleShowVisionMission = () => {
+    const missionPoints = candidate.misi ? candidate.misi.split("\n") : [];
+
+    MySwal.fire({
+      title: "Visi dan Misi",
+      html: (
+        <div>
+          <h3>Visi</h3>
+          <p>{candidate.visi}</p>
+          <hr style={{ margin: "10px 0" }} />
+          <h3>Misi</h3>
+          <ol style={{ paddingLeft: "20px" }}>
+            {missionPoints.map((item, index) => (
+              <li key={index} style={{ marginBottom: "5px" }}>
+                {item.trim()}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ),
+      showCloseButton: true,
+      showConfirmButton: false,
+      customClass: {
+        container: "my-custom-swal-container",
+      },
+    });
+  };
 
   const handleVote = async () => {
     const result = await Swal.fire({
@@ -15,15 +46,15 @@ const VotingCard = ({ candidate, user }) => {
       confirmButtonText: "Ya, Pilih",
       cancelButtonText: "Batal",
       customClass: {
-      confirmButton: 'swal-confirm-button',
-      cancelButton: 'swal-cancel-button'
-  },
-      buttonsStyling: false
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
+      buttonsStyling: false,
     });
 
     if (result.isConfirmed) {
       try {
-        const res = await api.post("/vote", {
+        await api.post("/vote", {
           userId: user.id,
           candidateId: candidate.id,
         });
@@ -44,9 +75,9 @@ const VotingCard = ({ candidate, user }) => {
           text: err.response?.data?.message || "Terjadi error",
           confirmButtonText: "OK",
           customClass: {
-          confirmButton: 'swal-confirm-button'
-    },
-      buttonsStyling: false
+            confirmButton: "swal-confirm-button",
+          },
+          buttonsStyling: false,
         });
       }
     }
@@ -94,7 +125,10 @@ const VotingCard = ({ candidate, user }) => {
           >
             VOTING
           </button>
-          <button className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto">
+          <button
+            onClick={handleShowVisionMission}
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-colors w-full md:w-auto"
+          >
             VISI & MISI
           </button>
         </div>

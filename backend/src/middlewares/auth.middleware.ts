@@ -9,6 +9,7 @@ declare global {
         id: string;
         nisn: string;
         role: string;
+        nama: string;
       };
     }
   }
@@ -51,6 +52,7 @@ export const isAuthenticated = (req: Request, res: Response, next: NextFunction)
       id: req.session.user.id,
       nisn: req.session.user.nisn,
       role: req.session.user.role,
+      nama: req.session.user.nama,
     };
     return next();
   }
