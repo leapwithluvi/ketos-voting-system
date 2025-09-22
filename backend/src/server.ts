@@ -32,7 +32,7 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 20, // 20 menit
       httpOnly: true,
-      secure: false, // true jika pakai HTTPS
+      secure: true, // true jika pakai HTTPS
       sameSite: 'lax',
     },
   }),
