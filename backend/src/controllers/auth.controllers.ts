@@ -9,11 +9,7 @@ declare module 'express-session' {
       id: string;
       nisn: string;
       role: string;
-    };
-    admin?: {
-      id: string;
-      username: string;
-      role: string;
+      nama: string;
     };
   }
 }
@@ -23,16 +19,28 @@ export const login = async (req: Request, res: Response) => {
   const { nisn, password } = req.body;
   try {
     const user = await loginServices.login(nisn, password);
+
+    if (!user || !user.id || !user.nisn || !user.role || !user.nama) {
+      return responseError(
+        res,
+        'Invalid user data received from login service.',
+        httpStatus.INTERNAL_SERVER_ERROR,
+        undefined,
+      );
+    }
+
     req.session.user = {
-      id: user.id,
+      id: user.id!,
       nisn: user.nisn,
       role: user.role,
+      nama: user.nama,
     };
 
     req.user = {
       id: user.id,
       nisn: user.nisn,
       role: user.role,
+      nama: user.nama,
     };
 
     return responseSuccess(res, 'Login berhasil.', httpStatus.OK, {

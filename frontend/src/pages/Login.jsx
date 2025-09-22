@@ -32,7 +32,7 @@ const LoginPage = ({ setUser }) => {
       Swal.fire({
         icon: "success",
         title: "Login Berhasil",
-        text: `Selamat datang, ${loggedUser.nisn}`,
+        text: `Selamat datang, ${loggedUser.nama || loggedUser.nisn}`,
         showConfirmButton: false,
         timer: 1500,
       });
@@ -48,6 +48,11 @@ const LoginPage = ({ setUser }) => {
         icon: "error",
         title: "Login Gagal",
         text: err.response?.data?.message || "NISN / Password salah",
+        customClass: {
+        confirmButton: 'swal-confirm-button',
+        cancelButton: 'swal-cancel-button'
+    },
+      buttonsStyling: false
       });
     } finally {
       setLoading(false);

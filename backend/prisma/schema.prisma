@@ -8,10 +8,12 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  nisn     String @unique
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  nama     String?
+  nisn     String  @unique
   password String
-  role     String @default("user")
+  kelas    String?
+  role     String  @default("user")
   votes    Vote[]
 }
 

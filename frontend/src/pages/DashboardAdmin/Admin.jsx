@@ -226,8 +226,35 @@ export default function AdminDashboard() {
   };
 
   const onSave = async () => {
-    if (!form.no || !form.ketuaNama || !form.wakilNama) {
-      return alert("No, Ketua, dan Wakil wajib diisi");
+    // Validasi di sini
+    if (
+      !form.no ||
+      !form.ketuaNama ||
+      !form.wakilNama ||
+      !form.visi ||
+      !form.misi
+    ) {
+      return MySwal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Data No, Ketua, Wakil, Visi, dan Misi wajib diisi.",
+      });
+    }
+
+    // Validasi gambar wajib saat membuat kandidat baru
+    if (!editing) {
+      if (
+        !form.ketuaImg ||
+        !form.wakilImg ||
+        !form.jurusanImg1 ||
+        !form.jurusanImg2
+      ) {
+        return MySwal.fire({
+          icon: "error",
+          title: "Gagal!",
+          text: "Anda harus mengunggah foto Ketua, Wakil, dan 2 foto Jurusan.",
+        });
+      }
     }
 
     try {
@@ -254,15 +281,30 @@ export default function AdminDashboard() {
         setCandidates((prev) =>
           prev.map((c) => (c.id === editing.id ? res.data.data : c))
         );
+        MySwal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Kandidat berhasil diubah.",
+        });
       } else {
         res = await api.post("admin/candidates", fd, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         setCandidates((prev) => [res.data.data, ...prev]);
+        MySwal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Kandidat berhasil ditambahkan.",
+        });
       }
       setIsOpen(false);
     } catch (err) {
       console.error("Gagal simpan kandidat", err);
+      MySwal.fire({
+        icon: "error",
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat menyimpan data.",
+      });
     }
   };
 

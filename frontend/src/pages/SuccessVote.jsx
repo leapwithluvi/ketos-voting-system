@@ -1,8 +1,7 @@
 import React from "react";
-import { useParams, useLocation, Navigate } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 
 const SuccessVotePage = () => {
-  const { candidateNo } = useParams();
   const location = useLocation();
   const user = location.state?.user || JSON.parse(localStorage.getItem("user"));
 
@@ -17,8 +16,7 @@ const SuccessVotePage = () => {
           🎉 Selamat, {user.nama}!
         </h1>
         <p className="mt-4 text-lg text-gray-700">
-          Anda berhasil memilih kandidat nomor{" "}
-          <span className="font-bold">{candidateNo}</span>.
+          Anda berhasil memilih ketua osis dan wakil ketua osis tahun 2025/2026
         </p>
         <p className="mt-2 text-sm text-gray-500">
           Halaman ini hanya bisa diakses oleh akun Anda.

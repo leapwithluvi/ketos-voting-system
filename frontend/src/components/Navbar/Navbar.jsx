@@ -14,11 +14,11 @@ const Navbar = ({ user, setUser }) => {
       confirmButtonText: "Ya, Logout",
       cancelButtonText: "Batal",
       customClass: {
-      confirmButton: 'swal-confirm-button',
-      cancelButton: 'swal-cancel-button'
-    },
-      buttonsStyling: false
-});
+        confirmButton: "swal-confirm-button",
+        cancelButton: "swal-cancel-button",
+      },
+      buttonsStyling: false,
+    });
 
     if (result.isConfirmed) {
       try {
@@ -35,6 +35,11 @@ const Navbar = ({ user, setUser }) => {
           icon: "error",
           title: "Logout Gagal",
           text: err.response?.data?.message || "Terjadi kesalahan",
+          customClass: {
+            confirmButton: "swal-confirm-button",
+            cancelButton: "swal-cancel-button",
+          },
+          buttonsStyling: false,
         });
       } finally {
         setUser(null);
@@ -53,7 +58,7 @@ const Navbar = ({ user, setUser }) => {
         {user ? (
           <>
             <span className="text-white font-medium text-sm">
-              Hi, {user.nisn}
+              Hi, {user.nama}
             </span>
             <button
               onClick={handleLogout}

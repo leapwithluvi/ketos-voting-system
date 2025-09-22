@@ -1,6 +1,37 @@
 import React from "react";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const MySwal = withReactContent(Swal);
 
 const CandidateCard = ({ candidate }) => {
+  const handleShowVisionMission = () => {
+    const missionPoints = candidate.misi ? candidate.misi.split("\n") : [];
+
+    MySwal.fire({
+      title: "Visi dan Misi",
+      html: (
+        <div>
+          <h3>Visi</h3>
+          <p>{candidate.visi}</p>
+          <hr style={{ margin: "10px 0" }} />
+          <h3>Misi</h3>
+          <ol style={{ paddingLeft: "20px" }}>
+            {missionPoints.map((item, index) => (
+              <li key={index} style={{ marginBottom: "5px" }}>
+                {item.trim()}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ),
+      showCloseButton: true,
+      showConfirmButton: false,
+      customClass: {
+        container: "my-custom-swal-container",
+      },
+    });
+  };
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col w-full max-w-sm mx-auto">
       {/* Header */}
@@ -50,9 +81,9 @@ const CandidateCard = ({ candidate }) => {
               <img key={i} src={logo} alt="jurusan" className="w-10 h-10" />
             ))}
           </div>
-
           <button
             type="button"
+            onClick={handleShowVisionMission}
             className="text-white bg-red-700 hover:bg-red-800 focus:outline-none focus:ring-4 focus:ring-red-300 font-medium rounded-full text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900"
           >
             Visi & Misi
