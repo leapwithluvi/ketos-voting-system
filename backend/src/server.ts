@@ -13,9 +13,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const allowedOrigins =
+  process.env.NODE_ENV === 'production' ? [process.env.FE_URL_PROD!] : [process.env.FE_URL_DEV!];
+
 app.use(
   cors({
-    origin: process.env.FE_URL,
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
@@ -32,7 +35,7 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 20, // 20 menit
       httpOnly: true,
-      secure: true, // true jika pakai HTTPS
+      secure: process.env.NODE_ENV === 'production', // hanya true di production // true jika pakai HTTPS
       sameSite: 'lax',
     },
   }),
@@ -55,5 +58,5 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
