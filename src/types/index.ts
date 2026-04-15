@@ -1,8 +1,6 @@
-import type { Types } from 'mongoose'
-
 // ============ User Types ============
 export interface IUser {
-  _id: Types.ObjectId
+  id: string
   nisn: string
   name: string
   kelas: 'X' | 'XI' | 'XII'
@@ -10,7 +8,8 @@ export interface IUser {
   role: 'admin' | 'user'
   password?: string
   hasVoted: boolean
-  votedFor: Types.ObjectId | null
+  votedFor?: string | null
+  votedForId?: string | null
   votedAt: Date | null
   isActive: boolean
   failedLoginAttempts?: number
@@ -21,7 +20,7 @@ export interface IUser {
 }
 
 export interface IUserPublic {
-  _id: string
+  id: string
   nisn: string
   name: string
   kelas: string
@@ -35,7 +34,7 @@ export interface IUserPublic {
 
 // ============ Candidate Types ============
 export interface ICandidate {
-  _id: Types.ObjectId
+  id: string
   nomorUrut: number
   namaKetua: string
   namaWakil: string
@@ -50,7 +49,7 @@ export interface ICandidate {
 }
 
 export interface ICandidatePublic {
-  _id: string
+  id: string
   nomorUrut: number
   namaKetua: string
   namaWakil: string
@@ -64,18 +63,18 @@ export interface ICandidatePublic {
 
 // ============ Voting Session ============
 export interface IVotingSession {
-  _id: Types.ObjectId
+  id: string
   name: string
   isOpen: boolean
   startTime: Date
   endTime: Date
-  createdBy: Types.ObjectId
+  createdBy: string
 }
 
 // ============ Audit Log ============
 export interface IAuditLog {
-  _id: Types.ObjectId
-  userId?: Types.ObjectId
+  id: string
+  userId?: string
   action: string
   resource: string
   resourceId?: string
@@ -109,7 +108,7 @@ export interface VotingStats {
   totalVoted: number
   participationRate: number
   candidates: Array<{
-    _id: string
+    id: string
     nomorUrut: number
     namaKetua: string
     namaWakil: string

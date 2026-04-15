@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                  String         @id @default(uuid())
+  nisn                String         @unique
+  name                String
+  kelas               Kelas
+  jurusan             String
+  password            String
+  role                Role           @default(user)
+  hasVoted            Boolean        @default(false)
+  votedFor            Candidate?     @relation(fields: [votedForId], references: [id])
+  votedForId          String?
+  votedAt             DateTime?
+  isActive            Boolean        @default(true)
+  failedLoginAttempts Int            @default(0)
+  lockedUntil         DateTime?
+  passwordChangedAt   DateTime?
+  auditLogs           AuditLog[]
+  votingSessions      VotingSession[]
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([kelas, jurusan])
+  @@index([hasVoted])
+  @@index([role])
+}
+
+model Candidate {
+  id          String   @id @default(uuid())
+  nomorUrut   Int      @unique
+  namaKetua   String
+  namaWakil   String
+  fotoKetua   String
+  fotoWakil   String
+  visi        String
+  misi        String[]
+  jumlahSuara Int      @default(0)
+  isActive    Boolean  @default(true)
+  voters      User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  ipAddress  String
+  userAgent  String
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model VotingSession {
+  id        String    @id @default(uuid())
+  name      String
+  isOpen    Boolean   @default(false)
+  startTime DateTime?
+  endTime   DateTime?
+  user      User      @relation(fields: [createdBy], references: [id])
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+enum Kelas {
+  X
+  XI
+  XII
+}
+
+enum Role {
+  admin
+  user
+}

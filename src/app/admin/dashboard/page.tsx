@@ -1,8 +1,5 @@
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
-import Candidate from '@/models/Candidate'
-import VotingSession from '@/models/VotingSession'
+import prisma from '@/lib/prisma'
 import StatsChart from '@/components/admin/StatsChart'
 import {
   Users, UserSquare2, CheckCircle2, TrendingUp, Clock, ToggleLeft, ToggleRight
@@ -13,12 +10,16 @@ export const metadata: Metadata = { title: 'Dashboard Admin' }
 export const dynamic = 'force-dynamic'
 
 async function getDashboardData() {
-  await connectDB()
   const [totalVoters, totalVoted, candidates, session] = await Promise.all([
-    User.countDocuments({ role: 'user', isActive: true }),
-    User.countDocuments({ role: 'user', hasVoted: true }),
-    Candidate.find({ isActive: true }).sort({ nomorUrut: 1 }).lean(),
-    VotingSession.findOne().sort({ createdAt: -1 }).lean(),
+    prisma.user.count({ where: { role: 'user', isActive: true } }),
+    prisma.user.count({ where: { role: 'user', hasVoted: true } }),
+    prisma.candidate.findMany({
+      where: { isActive: true },
+      orderBy: { nomorUrut: 'asc' },
+    }),
+    prisma.votingSession.findFirst({
+      orderBy: { createdAt: 'desc' },
+    }),
   ])
 
   const participationRate = totalVoters > 0 ? (totalVoted / totalVoters) * 100 : 0
@@ -144,7 +145,7 @@ export default async function AdminDashboardPage() {
               const pct = totalSuara > 0 ? (c.jumlahSuara / totalSuara) * 100 : 0
               const colors = ['bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500']
               return (
-                <div key={c._id.toString()}>
+                <div key={c.id}>
                   <div className="flex items-center justify-between mb-1">
                     <div>
                       <span className="font-semibold text-slate-900 text-sm">

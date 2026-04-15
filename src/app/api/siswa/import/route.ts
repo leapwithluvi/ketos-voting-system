@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { hashPassword, generatePassword } from '@/lib/password'
 import { ImportRowSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
@@ -39,8 +38,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Format file tidak didukung (.xlsx, .xls, .csv)' }, { status: 400 })
     }
 
-    await connectDB()
-
     const result: ImportResult = { success: 0, failed: 0, errors: [] }
 
     for (let i = 0; i < rows.length; i++) {
@@ -68,7 +65,9 @@ export async function POST(req: Request) {
 
       try {
         // Check duplicate
-        const exists = await User.findOne({ nisn: parsed.data.nisn })
+        const exists = await prisma.user.findUnique({
+          where: { nisn: parsed.data.nisn }
+        })
         if (exists) {
           result.failed++
           result.errors.push({ row: rowNum, nisn: parsed.data.nisn, error: 'NISN sudah terdaftar' })
@@ -78,10 +77,13 @@ export async function POST(req: Request) {
         const plainPassword = generatePassword(parsed.data.nisn)
         const hashed = await hashPassword(plainPassword)
 
-        await User.create({
-          ...parsed.data,
-          password: hashed,
-          passwordChangedAt: new Date(),
+        await prisma.user.create({
+          data: {
+            ...parsed.data,
+            password: hashed,
+            passwordChangedAt: new Date(),
+            kelas: parsed.data.kelas as any,
+          }
         })
         result.success++
       } catch (err: unknown) {

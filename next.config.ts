@@ -2,7 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   // serverActions sudah stable di Next.js 15, tidak perlu di experimental
-  serverExternalPackages: ['mongoose', 'winston', 'bcryptjs'],
+  serverExternalPackages: ['winston', 'bcryptjs'],
   images: {
     remotePatterns: [],
     formats: ['image/avif', 'image/webp'],

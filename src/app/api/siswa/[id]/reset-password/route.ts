@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { hashPassword, generatePassword } from '@/lib/password'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { logger } from '@/lib/logger'
-import mongoose from 'mongoose'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -17,22 +15,23 @@ export async function POST(req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-
-    await connectDB()
-    const user = await User.findById(id)
+    
+    const user = await prisma.user.findUnique({
+      where: { id },
+    })
     if (!user) return NextResponse.json({ success: false, error: 'Siswa tidak ditemukan' }, { status: 404 })
 
     const newPassword = generatePassword(user.nisn)
     const hashed = await hashPassword(newPassword)
 
-    await User.findByIdAndUpdate(id, {
-      password: hashed,
-      passwordChangedAt: new Date(),
-      failedLoginAttempts: 0,
-      lockedUntil: null,
+    await prisma.user.update({
+      where: { id },
+      data: {
+        password: hashed,
+        passwordChangedAt: new Date(),
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
     })
 
     await createAuditLog({

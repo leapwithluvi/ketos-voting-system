@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
+import prisma from '@/lib/prisma'
 import { CreateCandidateSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { checkRateLimit, apiRateLimiter } from '@/lib/rateLimit'
@@ -12,8 +11,9 @@ export async function GET(req: Request) {
     const { allowed } = await checkRateLimit(apiRateLimiter, getClientIp(req))
     if (!allowed) return NextResponse.json({ success: false, error: 'Too many requests' }, { status: 429 })
 
-    await connectDB()
-    const candidates = await Candidate.find().sort({ nomorUrut: 1 }).lean()
+    const candidates = await prisma.candidate.findMany({
+      orderBy: { nomorUrut: 'asc' },
+    })
     return NextResponse.json({ success: true, data: candidates })
   } catch (error) {
     logger.error('GET /api/kandidat error', error)
@@ -40,10 +40,10 @@ export async function POST(req: Request) {
       )
     }
 
-    await connectDB()
-
     // Check duplicate nomorUrut
-    const existing = await Candidate.findOne({ nomorUrut: parsed.data.nomorUrut })
+    const existing = await prisma.candidate.findUnique({
+      where: { nomorUrut: parsed.data.nomorUrut },
+    })
     if (existing) {
       return NextResponse.json(
         { success: false, error: `Nomor urut ${parsed.data.nomorUrut} sudah digunakan` },
@@ -51,22 +51,25 @@ export async function POST(req: Request) {
       )
     }
 
-    const candidate = await Candidate.create(parsed.data)
+    const candidate = await prisma.candidate.create({
+      data: parsed.data,
+    })
 
     await createAuditLog({
       userId: session.user.id,
       action: 'CREATE_CANDIDATE',
       resource: 'Candidate',
-      resourceId: candidate._id.toString(),
+      resourceId: candidate.id,
       ipAddress: getClientIp(req),
       userAgent: getUserAgent(req),
       details: { nomorUrut: candidate.nomorUrut, namaKetua: candidate.namaKetua },
     })
 
-    logger.info('Candidate created', { id: candidate._id, nomorUrut: candidate.nomorUrut })
+    logger.info('Candidate created', { id: candidate.id, nomorUrut: candidate.nomorUrut })
     return NextResponse.json({ success: true, data: candidate }, { status: 201 })
   } catch (error) {
     logger.error('POST /api/kandidat error', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
+

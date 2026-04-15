@@ -7,7 +7,7 @@ import { CheckCircle2, XCircle, RefreshCw, ChevronLeft, ChevronRight } from 'luc
 import Link from 'next/link'
 
 interface Student {
-  _id: string; nisn: string; name: string; kelas: string
+  id: string; nisn: string; name: string; kelas: string
   jurusan: string; hasVoted: boolean; isActive: boolean; createdAt: string
 }
 
@@ -76,13 +76,13 @@ export default function StudentTableClient({ students, page, totalPages, search 
           </thead>
           <tbody className="divide-y divide-slate-50">
             {students.map((s) => (
-              <tr key={s._id} className="hover:bg-slate-50/80 transition-colors">
+              <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
                 <td className="px-4 py-3 font-mono text-slate-600">{s.nisn}</td>
                 <td className="px-4 py-3 font-semibold text-slate-900">{s.name}</td>
                 <td className="px-4 py-3 text-slate-600">{s.kelas}</td>
                 <td className="px-4 py-3 text-slate-600">{s.jurusan}</td>
                 <td className="px-4 py-3">
-                  <button onClick={() => toggleActive(s._id, s.isActive)}
+                  <button onClick={() => toggleActive(s.id, s.isActive)}
                     className={`badge cursor-pointer hover:opacity-80 transition-opacity ${s.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
                     {s.isActive ? 'Aktif' : 'Nonaktif'}
                   </button>
@@ -94,14 +94,14 @@ export default function StudentTableClient({ students, page, totalPages, search 
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-1">
-                    <Link href={`/admin/siswa/${s._id}/edit`}
+                    <Link href={`/admin/siswa/${s.id}/edit`}
                       className="text-xs px-2 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all font-medium">
                       Edit
                     </Link>
-                    <button onClick={() => resetPassword(s._id)}
-                      disabled={resettingId === s._id}
+                    <button onClick={() => resetPassword(s.id)}
+                      disabled={resettingId === s.id}
                       className="text-xs px-2 py-1 rounded-lg bg-orange-50 text-orange-600 hover:bg-orange-100 transition-all font-medium flex items-center gap-1 disabled:opacity-50">
-                      {resettingId === s._id ? <div className="w-3 h-3 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                      {resettingId === s.id ? <div className="w-3 h-3 border-2 border-orange-300 border-t-orange-600 rounded-full animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                       Reset
                     </button>
                   </div>

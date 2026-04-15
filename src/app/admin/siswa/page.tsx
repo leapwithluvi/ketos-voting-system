@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { Plus, Upload, Printer, Search } from 'lucide-react'
 import StudentTableClient from '@/components/admin/StudentTableClient'
 import type { Metadata } from 'next'
@@ -18,32 +17,29 @@ export default async function SiswaPage({
   const search = params.search ?? ''
   const limit = 15
 
-  await connectDB()
-
-  const query = search
-    ? {
-        role: 'user',
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { nisn: { $regex: search, $options: 'i' } },
-          { jurusan: { $regex: search, $options: 'i' } },
-        ],
-      }
-    : { role: 'user' }
+  const where: any = { role: 'user' }
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { nisn: { contains: search, mode: 'insensitive' } },
+      { jurusan: { contains: search, mode: 'insensitive' } },
+    ]
+  }
 
   const [students, total] = await Promise.all([
-    User.find(query)
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(limit)
-      .lean(),
-    User.countDocuments(query),
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.user.count({ where }),
   ])
 
   const totalPages = Math.ceil(total / limit)
 
   const serialized = students.map((s) => ({
-    _id: s._id.toString(),
+    id: s.id,
     nisn: s.nisn,
     name: s.name,
     kelas: s.kelas,

@@ -1,5 +1,4 @@
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import PrintCardsClient from '@/components/admin/PrintCardsClient'
 import type { Metadata } from 'next'
 
@@ -7,17 +6,26 @@ export const metadata: Metadata = { title: 'Cetak Kartu Login' }
 export const dynamic = 'force-dynamic'
 
 export default async function CetakPage() {
-  await connectDB()
-  const students = await User.find({ role: 'user', isActive: true })
-    .sort({ kelas: 1, name: 1 })
-    .select('nisn name kelas jurusan')
-    .lean()
+  const students = await prisma.user.findMany({
+    where: { role: 'user', isActive: true },
+    orderBy: [
+      { kelas: 'asc' },
+      { name: 'asc' },
+    ],
+    select: {
+      id: true,
+      nisn: true,
+      name: true,
+      kelas: true,
+      jurusan: true,
+    },
+  })
 
   const serialized = students.map((s) => ({
-    _id: s._id.toString(),
+    id: s.id,
     nisn: s.nisn,
     name: s.name,
-    kelas: s.kelas,
+    kelas: s.kelas.toString(),
     jurusan: s.jurusan,
   }))
 

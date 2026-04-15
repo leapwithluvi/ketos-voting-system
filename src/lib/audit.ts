@@ -1,5 +1,4 @@
-import { connectDB } from './db'
-import { AuditLog } from '@/models/AuditLog'
+import prisma from './prisma'
 import { logger } from './logger'
 
 interface AuditParams {
@@ -9,15 +8,21 @@ interface AuditParams {
   resourceId?: string
   ipAddress: string
   userAgent?: string
-  details?: Record<string, unknown>
+  details?: any
 }
 
 export async function createAuditLog(params: AuditParams): Promise<void> {
   try {
-    await connectDB()
-    await AuditLog.create({
-      ...params,
-      userAgent: params.userAgent ?? '',
+    await prisma.auditLog.create({
+      data: {
+        userId: params.userId,
+        action: params.action,
+        resource: params.resource,
+        resourceId: params.resourceId,
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent ?? '',
+        details: params.details,
+      },
     })
   } catch (error) {
     // Audit log should never break main flow

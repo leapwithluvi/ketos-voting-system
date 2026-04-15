@@ -1,14 +1,10 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
-import User from '@/models/User'
-import VotingSession from '@/models/VotingSession'
+import prisma from '@/lib/prisma'
 import { VoteSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { checkRateLimit, voteRateLimiter } from '@/lib/rateLimit'
 import { logger } from '@/lib/logger'
-import mongoose from 'mongoose'
 
 export async function POST(req: Request) {
   try {
@@ -40,14 +36,10 @@ export async function POST(req: Request) {
 
     const { candidateId } = parsed.data
 
-    if (!mongoose.Types.ObjectId.isValid(candidateId)) {
-      return NextResponse.json({ success: false, error: 'ID kandidat tidak valid' }, { status: 400 })
-    }
-
-    await connectDB()
-
     // Check voting session open
-    const votingSession = await VotingSession.findOne().sort({ createdAt: -1 }).lean()
+    const votingSession = await prisma.votingSession.findFirst({
+      orderBy: { createdAt: 'desc' },
+    })
     if (!votingSession?.isOpen) {
       return NextResponse.json(
         { success: false, error: 'Sesi voting sedang ditutup' },
@@ -55,8 +47,10 @@ export async function POST(req: Request) {
       )
     }
 
-    // Double-check hasVoted from DB (not from JWT to prevent stale token attack)
-    const voter = await User.findById(session.user.id).select('+hasVoted +votedFor +isActive')
+    // Double-check hasVoted from DB
+    const voter = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    })
     if (!voter) {
       return NextResponse.json({ success: false, error: 'User tidak ditemukan' }, { status: 404 })
     }
@@ -71,35 +65,30 @@ export async function POST(req: Request) {
     }
 
     // Check candidate exists and active
-    const candidate = await Candidate.findOne({ _id: candidateId, isActive: true })
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId, isActive: true },
+    })
     if (!candidate) {
       return NextResponse.json({ success: false, error: 'Kandidat tidak ditemukan atau tidak aktif' }, { status: 404 })
     }
 
-    // Atomic vote transaction using session
-    const dbSession = await mongoose.startSession()
-    try {
-      await dbSession.withTransaction(async () => {
-        // Mark user as voted
-        await User.findByIdAndUpdate(
-          session.user.id,
-          {
-            hasVoted: true,
-            votedFor: candidateId,
-            votedAt: new Date(),
-          },
-          { session: dbSession }
-        )
-        // Increment candidate vote count
-        await Candidate.findByIdAndUpdate(
-          candidateId,
-          { $inc: { jumlahSuara: 1 } },
-          { session: dbSession }
-        )
-      })
-    } finally {
-      await dbSession.endSession()
-    }
+    // Atomic vote transaction
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: session.user.id },
+        data: {
+          hasVoted: true,
+          votedForId: candidateId,
+          votedAt: new Date(),
+        },
+      }),
+      prisma.candidate.update({
+        where: { id: candidateId },
+        data: {
+          jumlahSuara: { increment: 1 },
+        },
+      }),
+    ])
 
     await createAuditLog({
       userId: session.user.id,
@@ -123,3 +112,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
+

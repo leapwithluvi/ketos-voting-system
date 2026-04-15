@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 interface Student {
-  _id: string; nisn: string; name: string
+  id: string; nisn: string; name: string
   kelas: string; jurusan: string; isActive: boolean; hasVoted: boolean
 }
 
@@ -35,7 +35,7 @@ export default function EditSiswaForm({ student }: { student: Student }) {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch(`/api/siswa/${student._id}`, {
+      const res = await fetch(`/api/siswa/${student.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

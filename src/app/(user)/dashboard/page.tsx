@@ -1,8 +1,5 @@
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
-import VotingSession from '@/models/VotingSession'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import CandidateCard from '@/components/user/CandidateCard'
 import { Clock, CheckCircle2, AlertCircle } from 'lucide-react'
 import type { Metadata } from 'next'
@@ -14,16 +11,21 @@ export default async function UserDashboardPage() {
   const session = await auth()
   if (!session) return null
 
-  await connectDB()
-
   const [candidates, votingSession, user] = await Promise.all([
-    Candidate.find({ isActive: true }).sort({ nomorUrut: 1 }).lean(),
-    VotingSession.findOne().sort({ createdAt: -1 }).lean(),
-    User.findById(session.user.id).lean(),
+    prisma.candidate.findMany({
+      where: { isActive: true },
+      orderBy: { nomorUrut: 'asc' },
+    }),
+    prisma.votingSession.findFirst({
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+    }),
   ])
 
   const hasVoted = user?.hasVoted ?? false
-  const votedFor = user?.votedFor?.toString()
+  const votedFor = user?.votedForId ?? null
   const isOpen = votingSession?.isOpen ?? false
 
   return (
@@ -77,9 +79,9 @@ export default async function UserDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {candidates.map((c) => (
             <CandidateCard
-              key={c._id.toString()}
+              key={c.id}
               candidate={{
-                _id: c._id.toString(),
+                id: c.id,
                 nomorUrut: c.nomorUrut,
                 namaKetua: c.namaKetua,
                 namaWakil: c.namaWakil,
@@ -92,7 +94,7 @@ export default async function UserDashboardPage() {
               }}
               isVotingOpen={isOpen}
               hasVoted={hasVoted}
-              isVotedFor={votedFor === c._id.toString()}
+              isVotedFor={votedFor === c.id}
             />
           ))}
         </div>

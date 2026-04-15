@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { UpdateUserSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { logger } from '@/lib/logger'
-import mongoose from 'mongoose'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -17,12 +15,10 @@ export async function GET(_req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-
-    await connectDB()
-    const user = await User.findById(id).lean()
+    
+    const user = await prisma.user.findUnique({
+      where: { id },
+    })
     if (!user) return NextResponse.json({ success: false, error: 'Siswa tidak ditemukan' }, { status: 404 })
 
     return NextResponse.json({ success: true, data: user })
@@ -40,18 +36,17 @@ export async function PATCH(req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-
+    
     const body = await req.json()
     const parsed = UpdateUserSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ success: false, error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    await connectDB()
-    const user = await User.findByIdAndUpdate(id, parsed.data, { new: true, runValidators: true })
+    const user = await prisma.user.update({
+      where: { id },
+      data: parsed.data,
+    })
     if (!user) return NextResponse.json({ success: false, error: 'Siswa tidak ditemukan' }, { status: 404 })
 
     await createAuditLog({
@@ -78,12 +73,10 @@ export async function DELETE(req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
 
-    await connectDB()
-    const user = await User.findByIdAndDelete(id)
+    const user = await prisma.user.delete({
+      where: { id },
+    })
     if (!user) return NextResponse.json({ success: false, error: 'Siswa tidak ditemukan' }, { status: 404 })
 
     await createAuditLog({

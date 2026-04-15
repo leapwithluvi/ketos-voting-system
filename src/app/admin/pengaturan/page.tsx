@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Settings, ToggleLeft, ToggleRight, Clock } from 'lucide-react'
 
-interface VSession { _id: string; name: string; isOpen: boolean; startTime?: string; endTime?: string }
+interface VSession { id: string; name: string; isOpen: boolean; startTime?: string; endTime?: string }
 
 export default function PengaturanPage() {
   const [session, setSession] = useState<VSession | null>(null)

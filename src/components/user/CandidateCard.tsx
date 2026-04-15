@@ -26,7 +26,7 @@ export default function CandidateCard({ candidate: c, isVotingOpen, hasVoted, is
       const res = await fetch('/api/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ candidateId: c._id }),
+        body: JSON.stringify({ candidateId: c.id }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { connectDB } from '@/lib/db'
-import mongoose from 'mongoose'
+import prisma from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const start = Date.now()
@@ -9,12 +10,12 @@ export async function GET() {
   let dbLatency = 0
 
   try {
-    await connectDB()
     const dbStart = Date.now()
-    await mongoose.connection.db?.admin().ping()
+    await prisma.$queryRaw`SELECT 1`
     dbLatency = Date.now() - dbStart
     dbStatus = 'connected'
-  } catch {
+  } catch (error) {
+    console.error('Health check DB error:', error)
     dbStatus = 'error'
   }
 

@@ -1,22 +1,22 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
-import User from '@/models/User'
-import VotingSession from '@/models/VotingSession'
+import prisma from '@/lib/prisma'
 import { VotingSessionSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { logger } from '@/lib/logger'
 
 export async function GET(_req: Request) {
   try {
-    await connectDB()
-
     const [totalVoters, totalVoted, candidates, session] = await Promise.all([
-      User.countDocuments({ role: 'user', isActive: true }),
-      User.countDocuments({ role: 'user', hasVoted: true }),
-      Candidate.find({ isActive: true }).sort({ nomorUrut: 1 }).lean(),
-      VotingSession.findOne().sort({ createdAt: -1 }).lean(),
+      prisma.user.count({ where: { role: 'user', isActive: true } }),
+      prisma.user.count({ where: { role: 'user', hasVoted: true } }),
+      prisma.candidate.findMany({
+        where: { isActive: true },
+        orderBy: { nomorUrut: 'asc' },
+      }),
+      prisma.votingSession.findFirst({
+        orderBy: { createdAt: 'desc' },
+      }),
     ])
 
     const totalSuara = candidates.reduce((a, c) => a + c.jumlahSuara, 0)
@@ -31,7 +31,7 @@ export async function GET(_req: Request) {
         isOpen: session?.isOpen ?? false,
         session: session
           ? {
-              _id: session._id.toString(),
+              id: session.id,
               name: session.name,
               isOpen: session.isOpen,
               startTime: session.startTime,
@@ -39,7 +39,7 @@ export async function GET(_req: Request) {
             }
           : null,
         candidates: candidates.map((c) => ({
-          _id: c._id.toString(),
+          id: c.id,
           nomorUrut: c.nomorUrut,
           namaKetua: c.namaKetua,
           namaWakil: c.namaWakil,
@@ -65,8 +65,8 @@ export async function PATCH(req: Request) {
 
 async function upsertSession(req: Request, isUpdate: boolean) {
   try {
-    const session = await auth()
-    if (!session || session.user.role !== 'admin') {
+    const sessionUser = await auth()
+    if (!sessionUser || sessionUser.user.role !== 'admin') {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -76,32 +76,38 @@ async function upsertSession(req: Request, isUpdate: boolean) {
       return NextResponse.json({ success: false, error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    await connectDB()
-
     let votingSession
     if (isUpdate) {
-      votingSession = await VotingSession.findOneAndUpdate(
-        {},
-        { ...parsed.data, startTime: parsed.data.startTime ? new Date(parsed.data.startTime) : undefined, endTime: parsed.data.endTime ? new Date(parsed.data.endTime) : undefined },
-        { new: true, sort: { createdAt: -1 } }
-      )
-      if (!votingSession) {
+      const current = await prisma.votingSession.findFirst({
+        orderBy: { createdAt: 'desc' },
+      })
+      if (!current) {
         return NextResponse.json({ success: false, error: 'Sesi tidak ditemukan' }, { status: 404 })
       }
+      votingSession = await prisma.votingSession.update({
+        where: { id: current.id },
+        data: {
+          ...parsed.data,
+          startTime: parsed.data.startTime ? new Date(parsed.data.startTime) : undefined,
+          endTime: parsed.data.endTime ? new Date(parsed.data.endTime) : undefined,
+        },
+      })
     } else {
-      votingSession = await VotingSession.create({
-        ...parsed.data,
-        startTime: parsed.data.startTime ? new Date(parsed.data.startTime) : undefined,
-        endTime: parsed.data.endTime ? new Date(parsed.data.endTime) : undefined,
-        createdBy: session.user.id,
+      votingSession = await prisma.votingSession.create({
+        data: {
+          ...parsed.data,
+          startTime: parsed.data.startTime ? new Date(parsed.data.startTime) : undefined,
+          endTime: parsed.data.endTime ? new Date(parsed.data.endTime) : undefined,
+          createdBy: sessionUser.user.id,
+        },
       })
     }
 
     await createAuditLog({
-      userId: session.user.id,
+      userId: sessionUser.user.id,
       action: isUpdate ? 'UPDATE_SESSION' : 'CREATE_SESSION',
       resource: 'VotingSession',
-      resourceId: votingSession._id.toString(),
+      resourceId: votingSession.id,
       ipAddress: getClientIp(req),
       userAgent: getUserAgent(req),
       details: { isOpen: votingSession.isOpen },
@@ -113,3 +119,4 @@ async function upsertSession(req: Request, isUpdate: boolean) {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
+

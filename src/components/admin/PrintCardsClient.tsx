@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Printer } from 'lucide-react'
 
-interface Student { _id: string; nisn: string; name: string; kelas: string; jurusan: string }
+interface Student { id: string; nisn: string; name: string; kelas: string; jurusan: string }
 
 export default function PrintCardsClient({ students }: { students: Student[] }) {
   const printRef = useRef<HTMLDivElement>(null)
@@ -106,7 +106,7 @@ export default function PrintCardsClient({ students }: { students: Student[] }) 
       {/* Preview */}
       <div ref={printRef} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {students.map((s) => (
-          <div key={s._id} className="border-2 border-blue-200 rounded-xl overflow-hidden text-xs shadow-sm">
+          <div key={s.id} className="border-2 border-blue-200 rounded-xl overflow-hidden text-xs shadow-sm">
             <div className="gradient-primary text-white p-2.5 text-center">
               <p className="font-bold text-sm">🗳 E-VOTING OSIS</p>
               <p className="opacity-70 text-xs">Kartu Login Pemilihan</p>

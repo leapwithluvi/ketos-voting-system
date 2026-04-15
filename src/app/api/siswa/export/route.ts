@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { exportToExcel, generateStudentTemplate } from '@/lib/excel'
 import { logger } from '@/lib/logger'
 
@@ -25,8 +24,13 @@ export async function GET(req: Request) {
       })
     }
 
-    await connectDB()
-    const students = await User.find({ role: 'user' }).sort({ kelas: 1, name: 1 }).lean()
+    const students = await prisma.user.findMany({
+      where: { role: 'user' },
+      orderBy: [
+        { kelas: 'asc' },
+        { name: 'asc' },
+      ],
+    })
 
     const data = students.map((s, i) => ({
       No: i + 1,

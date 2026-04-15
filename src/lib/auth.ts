@@ -1,7 +1,6 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { verifyPassword } from '@/lib/password'
 import { LoginSchema } from '@/lib/validations'
 import { logger } from '@/lib/logger'
@@ -27,12 +26,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const { nisn, password } = parsed.data
 
-        await connectDB()
-
-        // Find user with password field
-        const user = await User.findOne({ nisn, isActive: true }).select(
-          '+password +failedLoginAttempts +lockedUntil'
-        )
+        // Find user
+        const user = await prisma.user.findUnique({
+          where: { nisn, isActive: true },
+        })
 
         if (!user) {
           logger.warn('Login attempt for unknown NISN', { nisn })
@@ -45,30 +42,33 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new Error('Akun dikunci. Coba lagi nanti.')
         }
 
-        const isValid = await verifyPassword(password, (user as any).password)
+        const isValid = await verifyPassword(password, user.password)
 
         if (!isValid) {
           // Increment failed attempts
           const attempts = (user.failedLoginAttempts ?? 0) + 1
-          const updateData: Record<string, unknown> = {
+          const updateData: any = {
             failedLoginAttempts: attempts,
           }
           if (attempts >= 5) {
             updateData.lockedUntil = new Date(Date.now() + 15 * 60 * 1000)
             logger.warn('Account locked due to failed attempts', { nisn })
           }
-          await User.updateOne({ _id: user._id }, updateData)
+          await prisma.user.update({
+            where: { id: user.id },
+            data: updateData,
+          })
           return null
         }
 
         // Reset failed attempts on success
-        await User.updateOne(
-          { _id: user._id },
-          { failedLoginAttempts: 0, lockedUntil: null }
-        )
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { failedLoginAttempts: 0, lockedUntil: null },
+        })
 
         return {
-          id: user._id.toString(),
+          id: user.id,
           nisn: user.nisn,
           name: user.name,
           role: user.role,

@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
+import prisma from '@/lib/prisma'
 import { UpdateCandidateSchema } from '@/lib/validations'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
 import { logger } from '@/lib/logger'
-import mongoose from 'mongoose'
 
 type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_req: Request, { params }: Params) {
   try {
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-    await connectDB()
-    const candidate = await Candidate.findById(id).lean()
+    const candidate = await prisma.candidate.findUnique({
+      where: { id },
+    })
     if (!candidate) return NextResponse.json({ success: false, error: 'Kandidat tidak ditemukan' }, { status: 404 })
     return NextResponse.json({ success: true, data: candidate })
   } catch (error) {
@@ -33,19 +29,16 @@ export async function PATCH(req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-
     const body = await req.json()
     const parsed = UpdateCandidateSchema.safeParse(body)
     if (!parsed.success) {
       return NextResponse.json({ success: false, error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    await connectDB()
-    const candidate = await Candidate.findByIdAndUpdate(id, parsed.data, { new: true, runValidators: true })
-    if (!candidate) return NextResponse.json({ success: false, error: 'Kandidat tidak ditemukan' }, { status: 404 })
+    const candidate = await prisma.candidate.update({
+      where: { id },
+      data: parsed.data,
+    })
 
     await createAuditLog({
       userId: session.user.id,
@@ -71,14 +64,11 @@ export async function DELETE(req: Request, { params }: Params) {
     }
 
     const { id } = await params
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return NextResponse.json({ success: false, error: 'ID tidak valid' }, { status: 400 })
-    }
-
-    await connectDB()
 
     // Prevent deletion if votes exist
-    const candidate = await Candidate.findById(id)
+    const candidate = await prisma.candidate.findUnique({
+      where: { id },
+    })
     if (!candidate) return NextResponse.json({ success: false, error: 'Kandidat tidak ditemukan' }, { status: 404 })
     if (candidate.jumlahSuara > 0) {
       return NextResponse.json(
@@ -87,7 +77,9 @@ export async function DELETE(req: Request, { params }: Params) {
       )
     }
 
-    await Candidate.findByIdAndDelete(id)
+    await prisma.candidate.delete({
+      where: { id },
+    })
 
     await createAuditLog({
       userId: session.user.id,

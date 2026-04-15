@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { connectDB } from '@/lib/db'
-import User from '@/models/User'
+import prisma from '@/lib/prisma'
 import { CreateUserSchema, PaginationSchema } from '@/lib/validations'
 import { hashPassword, generatePassword } from '@/lib/password'
 import { createAuditLog, getClientIp, getUserAgent } from '@/lib/audit'
@@ -25,24 +24,23 @@ export async function GET(req: Request) {
       search: url.searchParams.get('search') ?? undefined,
     })
 
-    await connectDB()
-
-    const query: Record<string, unknown> = { role: 'user' }
+    const where: any = { role: 'user' }
     if (pagination.search) {
-      query.$or = [
-        { name: { $regex: pagination.search, $options: 'i' } },
-        { nisn: { $regex: pagination.search, $options: 'i' } },
-        { jurusan: { $regex: pagination.search, $options: 'i' } },
+      where.OR = [
+        { name: { contains: pagination.search, mode: 'insensitive' } },
+        { nisn: { contains: pagination.search, mode: 'insensitive' } },
+        { jurusan: { contains: pagination.search, mode: 'insensitive' } },
       ]
     }
 
     const [students, total] = await Promise.all([
-      User.find(query)
-        .sort({ createdAt: -1 })
-        .skip((pagination.page - 1) * pagination.limit)
-        .limit(pagination.limit)
-        .lean(),
-      User.countDocuments(query),
+      prisma.user.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (pagination.page - 1) * pagination.limit,
+        take: pagination.limit,
+      }),
+      prisma.user.count({ where }),
     ])
 
     return NextResponse.json({
@@ -74,10 +72,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: parsed.error.errors[0].message }, { status: 400 })
     }
 
-    await connectDB()
-
     // Check NISN duplicate
-    const existing = await User.findOne({ nisn: parsed.data.nisn })
+    const existing = await prisma.user.findUnique({
+      where: { nisn: parsed.data.nisn },
+    })
     if (existing) {
       return NextResponse.json({ success: false, error: 'NISN sudah terdaftar' }, { status: 409 })
     }
@@ -85,24 +83,30 @@ export async function POST(req: Request) {
     const plainPassword = generatePassword(parsed.data.nisn)
     const hashedPassword = await hashPassword(plainPassword)
 
-    const user = await User.create({
-      ...parsed.data,
-      password: hashedPassword,
-      passwordChangedAt: new Date(),
+    const user = await prisma.user.create({
+      data: {
+        ...parsed.data,
+        password: hashedPassword,
+        passwordChangedAt: new Date(),
+        kelas: parsed.data.kelas as any,
+      },
     })
 
     await createAuditLog({
       userId: session.user.id,
       action: 'CREATE_USER',
       resource: 'User',
-      resourceId: user._id.toString(),
+      resourceId: user.id,
       ipAddress: getClientIp(req),
       userAgent: getUserAgent(req),
       details: { nisn: user.nisn },
     })
 
+    // Remove password from response
+    const { password: _, ...userWithoutPassword } = user
+
     return NextResponse.json(
-      { success: true, data: { ...user.toJSON(), password: plainPassword } },
+      { success: true, data: { ...userWithoutPassword, password: plainPassword } },
       { status: 201 }
     )
   } catch (error) {
@@ -110,3 +114,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
+

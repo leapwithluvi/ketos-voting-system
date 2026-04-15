@@ -1,28 +1,26 @@
 import { notFound } from 'next/navigation'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
-import mongoose from 'mongoose'
+import prisma from '@/lib/prisma'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
 
 type Props = { params: Promise<{ id: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
-  if (!mongoose.Types.ObjectId.isValid(id)) return { title: 'Kandidat' }
-  await connectDB()
-  const c = await Candidate.findById(id).lean()
+  const c = await prisma.candidate.findUnique({
+    where: { id },
+  })
   if (!c) return { title: 'Kandidat tidak ditemukan' }
   return { title: `Paslon ${c.nomorUrut} – ${c.namaKetua}` }
 }
 
 export default async function KandidatDetailPage({ params }: Props) {
   const { id } = await params
-  if (!mongoose.Types.ObjectId.isValid(id)) notFound()
 
-  await connectDB()
-  const c = await Candidate.findById(id).lean()
+  const c = await prisma.candidate.findUnique({
+    where: { id },
+  })
   if (!c || !c.isActive) notFound()
 
   return (

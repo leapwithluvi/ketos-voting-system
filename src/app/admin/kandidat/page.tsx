@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { connectDB } from '@/lib/db'
-import Candidate from '@/models/Candidate'
+import prisma from '@/lib/prisma'
 import { Plus, Pencil, Users, CheckCircle2 } from 'lucide-react'
 import DeleteCandidateButton from '@/components/admin/DeleteCandidateButton'
 import type { Metadata } from 'next'
@@ -9,8 +8,9 @@ export const metadata: Metadata = { title: 'Manajemen Kandidat' }
 export const dynamic = 'force-dynamic'
 
 export default async function KandidatPage() {
-  await connectDB()
-  const candidates = await Candidate.find().sort({ nomorUrut: 1 }).lean()
+  const candidates = await prisma.candidate.findMany({
+    orderBy: { nomorUrut: 'asc' },
+  })
 
   return (
     <div className="p-8">
@@ -39,7 +39,7 @@ export default async function KandidatPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {candidates.map((c) => (
-            <div key={c._id.toString()} className="card card-hover p-6">
+            <div key={c.id} className="card card-hover p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center text-white text-xl font-bold shadow">
@@ -54,12 +54,12 @@ export default async function KandidatPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/admin/kandidat/${c._id}/edit`}
+                    href={`/admin/kandidat/${c.id}/edit`}
                     className="p-2 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
                   >
                     <Pencil className="w-4 h-4" />
                   </Link>
-                  <DeleteCandidateButton id={c._id.toString()} name={`Paslon ${c.nomorUrut}`} />
+                  <DeleteCandidateButton id={c.id} name={`Paslon ${c.nomorUrut}`} />
                 </div>
               </div>
 
