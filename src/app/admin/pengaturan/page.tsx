@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { Settings, ToggleLeft, ToggleRight, Clock } from 'lucide-react'
+import { Settings, ToggleLeft, ToggleRight, Clock, AlertTriangle, Trash2 } from 'lucide-react'
 
 interface VSession { id: string; name: string; isOpen: boolean; startTime?: string; endTime?: string }
 
@@ -10,6 +10,8 @@ export default function PengaturanPage() {
   const [session, setSession] = useState<VSession | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [form, setForm] = useState({ name: '', isOpen: false, startTime: '', endTime: '' })
 
   useEffect(() => {
@@ -20,8 +22,8 @@ export default function PengaturanPage() {
         setForm({
           name: s.name ?? '',
           isOpen: s.isOpen ?? false,
-          startTime: s.startTime ? new Date(s.startTime).toISOString().slice(0,16) : '',
-          endTime: s.endTime ? new Date(s.endTime).toISOString().slice(0,16) : '',
+          startTime: s.startTime ? new Date(s.startTime).toISOString().slice(0, 16) : '',
+          endTime: s.endTime ? new Date(s.endTime).toISOString().slice(0, 16) : '',
         })
       }
       setLoading(false)
@@ -32,8 +34,7 @@ export default function PengaturanPage() {
     setSaving(true)
     try {
       const method = session ? 'PATCH' : 'POST'
-      const url = session ? `/api/stats` : '/api/stats'
-      const res = await fetch(url, {
+      const res = await fetch('/api/stats', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
@@ -46,6 +47,21 @@ export default function PengaturanPage() {
       toast.error(e instanceof Error ? e.message : 'Gagal menyimpan')
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function resetVotes() {
+    setResetting(true)
+    try {
+      const res = await fetch('/api/admin/reset-votes', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      toast.success('Semua data suara berhasil direset!')
+      setShowResetConfirm(false)
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : 'Gagal mereset suara')
+    } finally {
+      setResetting(false)
     }
   }
 
@@ -126,15 +142,57 @@ export default function PengaturanPage() {
 
         {/* Danger zone */}
         <div className="card p-6 border border-red-100">
-          <h2 className="font-semibold text-red-600 mb-3">Zona Berbahaya</h2>
+          <div className="flex items-center gap-2 text-red-600 mb-3">
+            <Trash2 className="w-5 h-5" />
+            <h2 className="font-semibold">Zona Berbahaya</h2>
+          </div>
           <p className="text-sm text-slate-500 mb-4">
-            Reset semua data suara. Tindakan ini tidak dapat dibatalkan.
+            Reset semua data suara. Tindakan ini akan menghapus semua pilihan siswa dan mengosongkan perolehan suara kandidat.
           </p>
-          <button className="btn-danger" onClick={() => toast.error('Fitur ini membutuhkan konfirmasi tambahan')}>
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="btn-danger w-full sm:w-auto"
+          >
             Reset Semua Suara
           </button>
         </div>
       </div>
+
+      {/* Reset confirmation modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !resetting && setShowResetConfirm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Reset Semua Suara?</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              Tindakan ini tidak dapat dibatalkan. Semua siswa harus memilih kembali dari awal.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                disabled={resetting}
+                className="btn-secondary flex-1"
+              >
+                Batal
+              </button>
+              <button
+                onClick={resetVotes}
+                disabled={resetting}
+                className="btn-danger flex-1"
+              >
+                {resetting ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto" />
+                ) : (
+                  'Ya, Reset'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

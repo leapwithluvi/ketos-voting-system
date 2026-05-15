@@ -89,7 +89,7 @@ export type UpdateCandidateInput = z.infer<typeof UpdateCandidateSchema>
 
 // ============ Vote ============
 export const VoteSchema = z.object({
-  candidateId: z.string().length(24, 'ID kandidat tidak valid'),
+  candidateId: z.string().uuid('ID kandidat tidak valid'),
 })
 
 export type VoteInput = z.infer<typeof VoteSchema>
@@ -98,8 +98,8 @@ export type VoteInput = z.infer<typeof VoteSchema>
 export const VotingSessionSchema = z.object({
   name: z.string().min(3).max(200).trim(),
   isOpen: z.boolean(),
-  startTime: z.string().datetime().optional(),
-  endTime: z.string().datetime().optional(),
+  startTime: z.string().optional().or(z.literal('')),
+  endTime: z.string().optional().or(z.literal('')),
 })
 
 export type VotingSessionInput = z.infer<typeof VotingSessionSchema>

@@ -1,7 +1,8 @@
 'use client'
 
 import { signOut } from 'next-auth/react'
-import { Vote, LogOut, User } from 'lucide-react'
+import { Vote, LogOut, User, Lock } from 'lucide-react'
+import Link from 'next/link'
 
 interface Props {
   user: { name: string; nisn: string; kelas: string; hasVoted: boolean }
@@ -29,6 +30,13 @@ export default function UserNav({ user }: Props) {
             <span className="font-medium">{user.name}</span>
             <span className="text-slate-400">· Kelas {user.kelas}</span>
           </div>
+          <Link
+            href="/password"
+            className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-blue-600 transition-colors font-medium"
+          >
+            <Lock className="w-4 h-4" />
+            Sandi
+          </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors font-medium"

@@ -38,6 +38,27 @@ export default async function UserDashboardPage() {
         <p className="text-slate-500 mt-1">{votingSession?.name ?? 'Pilih pasangan calon favoritmu'}</p>
       </div>
 
+      {/* Security Banner */}
+      {!user?.passwordChangedAt && (
+        <div className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-red-50 border border-red-100 mb-6 group hover:bg-red-100 transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0 group-hover:bg-red-200">
+              <AlertCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="font-bold text-red-900">Keamanan Akun!</p>
+              <p className="text-sm text-red-700">Kamu masih menggunakan kata sandi bawaan. Segera ganti demi keamanan.</p>
+            </div>
+          </div>
+          <Link
+            href="/password"
+            className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-all shadow-sm flex-shrink-0"
+          >
+            Ganti Sekarang
+          </Link>
+        </div>
+      )}
+
       {/* Status banners */}
       {hasVoted && (
         <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-50 border border-green-200 mb-6">

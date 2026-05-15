@@ -81,7 +81,6 @@ export async function POST(req: Request) {
           data: {
             ...parsed.data,
             password: hashed,
-            passwordChangedAt: new Date(),
             kelas: parsed.data.kelas as any,
           }
         })
